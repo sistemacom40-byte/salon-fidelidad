@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tarjeta de Fidelidad</title>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(160deg, #e7ddc2, #c9bd97);
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 14px;
+    }
+    .scene { width: 100%; max-width: 460px; display: flex; flex-direction: column; gap: 16px; }
+    .card-wrap { position: relative; width: 100%; border-radius: 14px; overflow: hidden; box-shadow: 0 20px 34px -16px rgba(50,38,10,0.4); }
+    .card-wrap img { display: block; width: 100%; height: auto; }
+    .dyn-name {
+      position: absolute;
+      font-family: 'Caveat', cursive;
+      font-weight: 700;
+      color: #1e3a1a;
+      left: 30%; top: 81%; width: 60%; height: 12%;
+      font-size: font-size: clamp(16px, 5.5vw, 26px);
+      display: flex; align-items: center;
+    }
+    .status-block {
+      background: rgba(255,255,255,0.55);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .status-row { display: flex; justify-content: space-between; font-size: 13px; }
+    .status-label { color: #7c7562; text-transform: uppercase; font-weight: 600; font-size: 11px; }
+  .aviso {
+      text-align: center;
+      font-size: 13px;
+      color: #2b5a27;
+      font-weight: 600;
+      margin: 4px 0 0;
+    }
+    .aviso-descuento {
+      background: #f6e58a;
+      color: #8a6a1e;
+      padding: 8px;
+      border-radius: 8px;
+    }</style>
+</head>
+<body>
+  <div class="scene">
+    <div class="card-wrap">
+      <img src="{{ url_for('static', filename='tarjeta_' ~ visitas ~ '.jpg') }}" alt="Tarjeta">
+      <div class="dyn-name">{{ nombre }}</div>
+    </div>
+    <div class="status-block">
+      <div class="status-row"><span class="status-label">Visitas</span><span>{{ visitas }} / 8</span></div>
+      <div class="status-row"><span class="status-label">Celular</span><span>{{ celular }}</span></div>
+
+      {% if visitas >= 8 %}
+        <p class="aviso aviso-descuento">🎉 ¡15% de descuento disponible! Aplícalo en esta visita.</p>
+      {% else %}
+        <p class="aviso">🍃 Le faltan {{ 8 - visitas }} visita{{ 's' if 8 - visitas != 1 else '' }} para su 15% de descuento.</p>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>
