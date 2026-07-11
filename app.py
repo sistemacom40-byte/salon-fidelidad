@@ -97,9 +97,7 @@ def panel():
 
 @app.route("/tarjeta")
 def tarjeta():
-    if not session.get("staff_activo"):
-        return redirect(url_for("pin"))
-
+   
     celular = request.args.get("celular")
     m = marcador()
     conn = get_conexion()
