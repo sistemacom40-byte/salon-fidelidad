@@ -26,6 +26,13 @@ def crear_tablas():
                 ultima_visita TEXT
             )
         """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS promo (
+                id SERIAL PRIMARY KEY,
+                mensaje TEXT,
+                fecha_expira TEXT
+            )
+        """)
     else:
         cur.execute("""
             CREATE TABLE IF NOT EXISTS clientas (
@@ -34,6 +41,13 @@ def crear_tablas():
                 nombre TEXT NOT NULL,
                 visitas INTEGER DEFAULT 0,
                 ultima_visita TEXT
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS promo (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                mensaje TEXT,
+                fecha_expira TEXT
             )
         """)
     conn.commit()

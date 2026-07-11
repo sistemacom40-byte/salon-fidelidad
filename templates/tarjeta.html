@@ -4,8 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tarjeta de Fidelidad</title>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root{
+      --cream:#F6F1E4;
+      --ink:#2B2A24;
+      --leaf:#3F7A3A;
+      --leaf-dark:#2B5A27;
+      --leaf-soft:#8FBF7F;
+      --gold:#C9A24B;
+      --gold-dark:#8A6A1E;
+      --gold-soft:#F0DE9E;
+      --grey:#7C7562;
+    }
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       min-height: 100vh;
@@ -16,56 +29,267 @@
       justify-content: center;
       padding: 24px 14px;
     }
-    .scene { width: 100%; max-width: 460px; display: flex; flex-direction: column; gap: 16px; }
-    .card-wrap { position: relative; width: 100%; border-radius: 14px; overflow: hidden; box-shadow: 0 20px 34px -16px rgba(50,38,10,0.4); }
+    .scene { width: 100%; max-width: 460px; display: flex; flex-direction: column; gap: 14px; }
+
+    /* Momento de bienvenida — solo clienta */
+    .welcome {
+      text-align: center;
+      opacity: 0;
+      transform: translateY(-8px);
+      animation: fadeInDown 0.7s ease forwards;
+    }
+    .welcome-eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold-dark);
+      font-weight: 700;
+      margin: 0 0 2px;
+    }
+    .welcome-title {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-weight: 500;
+      font-size: 22px;
+      color: var(--leaf-dark);
+      margin: 0;
+    }
+    @keyframes fadeInDown {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-wrap {
+      position: relative;
+      width: 100%;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 24px 40px -18px rgba(50,38,10,0.45), 0 4px 10px rgba(50,38,10,0.12);
+      opacity: 0;
+      transform: scale(0.97);
+      animation: cardIn 0.6s 0.15s cubic-bezier(.2,.8,.3,1) forwards;
+    }
+    @keyframes cardIn { to { opacity: 1; transform: scale(1); } }
     .card-wrap img { display: block; width: 100%; height: auto; }
     .dyn-name {
       position: absolute;
       font-family: 'Caveat', cursive;
       font-weight: 700;
       color: #1e3a1a;
-      left: 30%; top: 81%; width: 60%; height: 12%;
-      font-size: font-size: clamp(16px, 5.5vw, 26px);
+      left: 30%; top: 81%; width: 66%; height: 12%;
       display: flex; align-items: center;
+      overflow: hidden;
+      white-space: nowrap;
     }
+
+    /* Bloque de estado, rediseñado */
     .status-block {
-      background: rgba(255,255,255,0.55);
-      border-radius: 14px;
-      padding: 14px 16px;
-      display: flex; flex-direction: column; gap: 8px;
+      background: rgba(255,255,255,0.68);
+      backdrop-filter: blur(2px);
+      border-radius: 16px;
+      padding: 6px 18px;
+      box-shadow: 0 10px 24px -16px rgba(50,38,10,0.3);
     }
-    .status-row { display: flex; justify-content: space-between; font-size: 13px; }
-    .status-label { color: #7c7562; text-transform: uppercase; font-weight: 600; font-size: 11px; }
-  .aviso {
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(43,42,36,0.08);
+    }
+    .status-row:last-child { border-bottom: none; }
+    .status-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+    .status-text { display: flex; flex-direction: column; flex: 1; }
+    .status-label {
+      color: var(--grey);
+      text-transform: uppercase;
+      font-weight: 700;
+      font-size: 10px;
+      letter-spacing: 0.04em;
+    }
+    .status-value { font-size: 14px; color: var(--ink); font-weight: 600; }
+
+    /* Progreso de hojas */
+    .progress-track {
+      height: 6px;
+      background: rgba(63,122,58,0.15);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--leaf), var(--leaf-soft));
+      border-radius: 99px;
+      transition: width 0.5s ease;
+    }
+
+    .aviso {
       text-align: center;
-      font-size: 13px;
-      color: #2b5a27;
+      font-size: 13.5px;
+      color: var(--leaf-dark);
       font-weight: 600;
-      margin: 4px 0 0;
+      margin: 14px 0 4px;
+      padding: 0 4px;
     }
     .aviso-descuento {
-      background: #f6e58a;
-      color: #8a6a1e;
-      padding: 8px;
-      border-radius: 8px;
-    }</style>
+      background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+      color: #4a3610;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      box-shadow: 0 6px 16px -8px rgba(138,106,30,0.5);
+    }
+    .aviso-lectura {
+      background: #eef0e9;
+      color: var(--ink);
+      padding: 10px 12px;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 12px;
+    }
+
+    /* Promo — listón dorado */
+    .promo-ribbon {
+      position: relative;
+      margin-top: 12px;
+      background: linear-gradient(135deg, #FDF3D8, var(--gold-soft));
+      border: 1px solid var(--gold);
+      border-radius: 12px;
+      padding: 12px 14px;
+      text-align: center;
+      box-shadow: 0 8px 18px -10px rgba(138,106,30,0.4);
+    }
+    .promo-eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold-dark);
+      font-weight: 700;
+      margin: 0 0 3px;
+    }
+    .promo-text {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 15px;
+      color: #4a3610;
+      margin: 0;
+    }
+
+    /* Botones */
+    .acciones { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .btn {
+      display: block;
+      text-align: center;
+      text-decoration: none;
+      padding: 13px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 14px;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--leaf), var(--leaf-dark));
+      color: white;
+      box-shadow: 0 8px 18px -8px rgba(43,90,39,0.55);
+    }
+    .btn-secondary {
+      background: white;
+      color: #b23;
+      border: 1px solid #f0d0d0;
+      box-shadow: 0 4px 10px -6px rgba(178,34,34,0.2);
+    }
+  </style>
 </head>
 <body>
   <div class="scene">
+
+    {% if solo_lectura %}
+      <div class="welcome">
+        <p class="welcome-eyebrow">Tarjeta digital VIP</p>
+        <p class="welcome-title">🌿 Bienvenida, {{ nombre.split(' ')[0] }}</p>
+      </div>
+    {% endif %}
+
     <div class="card-wrap">
       <img src="{{ url_for('static', filename='tarjeta_' ~ visitas ~ '.jpg') }}" alt="Tarjeta">
-      <div class="dyn-name">{{ nombre }}</div>
+      <div class="dyn-name" style="font-size: {{ tamano_nombre }};">{{ nombre }}</div>
     </div>
-    <div class="status-block">
-      <div class="status-row"><span class="status-label">Visitas</span><span>{{ visitas }} / 8</span></div>
-      <div class="status-row"><span class="status-label">Celular</span><span>{{ celular }}</span></div>
 
-      {% if visitas >= 8 %}
-        <p class="aviso aviso-descuento">🎉 ¡15% de descuento disponible! Aplícalo en esta visita.</p>
-      {% else %}
-        <p class="aviso">🍃 Le faltan {{ 8 - visitas }} visita{{ 's' if 8 - visitas != 1 else '' }} para su 15% de descuento.</p>
-      {% endif %}
+    <div class="status-block">
+      <div class="status-row">
+        <span class="status-icon">🍃</span>
+        <div class="status-text">
+          <span class="status-label">Visitas</span>
+          <span class="status-value">{{ visitas }} / 8</span>
+          <div class="progress-track"><div class="progress-fill" style="width: {{ (visitas / 8 * 100) | round(0) }}%;"></div></div>
+        </div>
+      </div>
+      <div class="status-row">
+        <span class="status-icon">📱</span>
+        <div class="status-text">
+          <span class="status-label">Celular</span>
+          <span class="status-value">{{ celular }}</span>
+        </div>
+      </div>
+      <div class="status-row">
+        <span class="status-icon">🕐</span>
+        <div class="status-text">
+          <span class="status-label">Última visita</span>
+          <span class="status-value">{{ ultima_visita }}</span>
+        </div>
+      </div>
     </div>
+
+    {% if visitas >= 8 %}
+      <p class="aviso aviso-descuento">🎉 ¡Tienes tu 15% de descuento disponible! Aplícalo en esta visita.</p>
+    {% else %}
+      <p class="aviso">Te faltan {{ 8 - visitas }} visita{{ 's' if 8 - visitas != 1 else '' }} para tu 15% de descuento.</p>
+    {% endif %}
+
+    {% if solo_lectura %}
+      <p class="aviso-lectura">📲 Muestra esta tarjeta al personal para registrar tu visita.</p>
+      {% if promo %}
+        <div class="promo-ribbon">
+          <p class="promo-eyebrow">✨ Promo de hoy</p>
+          <p class="promo-text">{{ promo }}</p>
+        </div>
+      {% endif %}
+    {% endif %}
+
+    {% if not solo_lectura %}
+      <div class="acciones">
+        {% if visitas > 0 %}
+          <a href="{{ url_for('restar', celular=celular) }}" class="btn btn-secondary">➖ Corregir: quitar 1 visita</a>
+        {% endif %}
+        <a href="{{ url_for('panel') }}" class="btn btn-primary">🔁 Registrar otra visita</a>
+      </div>
+    {% endif %}
   </div>
+
+  {% if solo_lectura %}
+  <script>
+    // Tono de bienvenida suave, generado sin archivo de audio
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      function tono(freq, inicio, duracion) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0, ctx.currentTime + inicio);
+        gain.gain.linearRampToValueAtTime(0.06, ctx.currentTime + inicio + 0.05);
+        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + inicio + duracion);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(ctx.currentTime + inicio);
+        osc.stop(ctx.currentTime + inicio + duracion);
+      }
+      tono(784, 0, 0.35);
+      tono(1046, 0.18, 0.4);
+    } catch (e) {}
+  </script>
+  {% endif %}
 </body>
 </html>
