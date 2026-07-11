@@ -56,7 +56,7 @@ def crear_tablas():
                 fecha_expira TEXT
             )
         """)
-       cur.execute("""
+    cur.execute("""
                 CREATE TABLE IF NOT EXISTS sesion_salon (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     activo_hasta TEXT
