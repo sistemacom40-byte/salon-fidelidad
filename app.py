@@ -116,7 +116,7 @@ def tarjeta():
         celular=clienta["celular"],
         ultima_visita=formatear_fecha(clienta["ultima_visita"]),
         tamano_nombre=tamano_nombre(clienta["nombre"]),
-        solo_lectura=False
+        solo_lectura=not session.get("staff_activo"),
     )
 
 @app.route("/tap/<celular>")
