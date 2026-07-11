@@ -1,11 +1,11 @@
 from flask import Flask, render_template, request, session, redirect, url_for
-from database import get_conexion, USANDO_POSTGRES
+from database import get_conexion, USANDO_POSTGRES, crear_tablas
 import datetime
 
 app = Flask(__name__)
 app.secret_key = "cambiar-esto-luego"
 app.permanent_session_lifetime = datetime.timedelta(hours=12)
-
+crear_tablas()
 PIN_CORRECTO = "1234"
 
 def marcador():
