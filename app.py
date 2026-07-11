@@ -40,6 +40,14 @@ def pin():
         if pin_ingresado == PIN_CORRECTO:
             session.permanent = True
             session["staff_activo"] = True
+            conn = get_conexion()
+            cur = conn.cursor()
+            m = marcador()
+            activo_hasta = (datetime.datetime.now() + datetime.timedelta(hours=12)).isoformat()
+            cur.execute(f"DELETE FROM sesion_salon")
+            cur.execute(f"INSERT INTO sesion_salon (activo_hasta) VALUES ({m})", (activo_hasta,))
+            conn.commit()
+            conn.close()
             return redirect(url_for("panel"))
         else:
             error = "PIN incorrecto, intenta de nuevo"
@@ -112,7 +120,6 @@ def tarjeta():
 
 @app.route("/tap/<celular>")
 def tap(celular):
-    print(f"DEBUG TAP - celular: {celular} - staff_activo: {session.get('staff_activo')} - cookies: {request.cookies}")
     m = marcador()
     conn = get_conexion()
     cur = conn.cursor()
@@ -123,7 +130,14 @@ def tap(celular):
         conn.close()
         return "Tarjeta no reconocida. Pide ayuda al personal del salón."
 
-    if not session.get("staff_activo"):
+    cur.execute("SELECT activo_hasta FROM sesion_salon ORDER BY id DESC LIMIT 1")
+    fila_sesion = cur.fetchone()
+    salon_activo = False
+    if fila_sesion and fila_sesion["activo_hasta"]:
+        if datetime.datetime.now() < datetime.datetime.fromisoformat(fila_sesion["activo_hasta"]):
+            salon_activo = True
+
+    if not salon_activo:
         cur.execute("SELECT * FROM promo")
         promo_actual = cur.fetchone()
         mensaje_promo = None
@@ -142,16 +156,17 @@ def tap(celular):
             promo=mensaje_promo
         )
 
-    nuevas_visitas = clienta["visitas"] + 1
-    if nuevas_visitas > 8:
-        nuevas_visitas = 0
-    cur.execute(
-        f"UPDATE clientas SET visitas = {m}, ultima_visita = {m} WHERE celular = {m}",
-        (nuevas_visitas, datetime.datetime.now().isoformat(), celular)
-    )
-    conn.commit()
-    conn.close()
-    return redirect(url_for("tarjeta", celular=celular))
+    else:
+        nuevas_visitas = clienta["visitas"] + 1
+        if nuevas_visitas > 8:
+            nuevas_visitas = 0
+        cur.execute(
+            f"UPDATE clientas SET visitas = {m}, ultima_visita = {m} WHERE celular = {m}",
+            (nuevas_visitas, datetime.datetime.now().isoformat(), celular)
+        )
+        conn.commit()
+        conn.close()
+        return redirect(url_for("tarjeta", celular=celular))
 
 @app.route("/restar/<celular>")
 def restar(celular):

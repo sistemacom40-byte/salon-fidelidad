@@ -33,6 +33,12 @@ def crear_tablas():
                 fecha_expira TEXT
             )
         """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS sesion_salon (
+                id SERIAL PRIMARY KEY,
+                activo_hasta TIMESTAMP
+            )
+        """)
     else:
         cur.execute("""
             CREATE TABLE IF NOT EXISTS clientas (
@@ -50,6 +56,12 @@ def crear_tablas():
                 fecha_expira TEXT
             )
         """)
+       cur.execute("""
+                CREATE TABLE IF NOT EXISTS sesion_salon (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    activo_hasta TEXT
+                )
+            """) 
     conn.commit()
     conn.close()
 
