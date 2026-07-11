@@ -134,7 +134,10 @@ def tap(celular):
     fila_sesion = cur.fetchone()
     salon_activo = False
     if fila_sesion and fila_sesion["activo_hasta"]:
-        if datetime.datetime.now() < datetime.datetime.fromisoformat(fila_sesion["activo_hasta"]):
+        valor_activo_hasta = fila_sesion["activo_hasta"]
+        if isinstance(valor_activo_hasta, str):
+            valor_activo_hasta = datetime.datetime.fromisoformat(valor_activo_hasta)
+        if datetime.datetime.now() < valor_activo_hasta:
             salon_activo = True
 
     if not salon_activo:
