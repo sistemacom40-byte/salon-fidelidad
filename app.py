@@ -112,6 +112,7 @@ def tarjeta():
 
 @app.route("/tap/<celular>")
 def tap(celular):
+    print(f"DEBUG TAP - celular: {celular} - staff_activo: {session.get('staff_activo')} - cookies: {request.cookies}")
     m = marcador()
     conn = get_conexion()
     cur = conn.cursor()
