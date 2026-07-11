@@ -34,6 +34,9 @@ def tamano_nombre(nombre):
 
 @app.route("/", methods=["GET", "POST"])
 def pin():
+    celular_nfc = request.args.get("c")
+    if celular_nfc:
+        return redirect(url_for("tap", celular=celular_nfc))
     error = None
     if request.method == "POST":
         pin_ingresado = request.form.get("pin", "")
