@@ -2,6 +2,7 @@ import os
 
 USANDO_POSTGRES = "DATABASE_URL" in os.environ
 
+
 def get_conexion():
     if USANDO_POSTGRES:
         import psycopg2
@@ -12,6 +13,7 @@ def get_conexion():
         conn = sqlite3.connect("salon.db")
         conn.row_factory = sqlite3.Row
     return conn
+
 
 def crear_tablas():
     conn = get_conexion()
@@ -26,6 +28,7 @@ def crear_tablas():
                 ultima_visita TEXT
             )
         """)
+
         cur.execute("""
             CREATE TABLE IF NOT EXISTS promo (
                 id SERIAL PRIMARY KEY,
@@ -33,6 +36,7 @@ def crear_tablas():
                 fecha_expira TEXT
             )
         """)
+
         cur.execute("""
             CREATE TABLE IF NOT EXISTS sesion_salon (
                 id SERIAL PRIMARY KEY,
@@ -49,6 +53,7 @@ def crear_tablas():
                 ultima_visita TEXT
             )
         """)
+
         cur.execute("""
             CREATE TABLE IF NOT EXISTS promo (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -56,14 +61,17 @@ def crear_tablas():
                 fecha_expira TEXT
             )
         """)
-    cur.execute("""
-                CREATE TABLE IF NOT EXISTS sesion_salon (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    activo_hasta TEXT
-                )
-            """) 
+
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS sesion_salon (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                activo_hasta TEXT
+            )
+        """)
+
     conn.commit()
     conn.close()
+
 
 if __name__ == "__main__":
     crear_tablas()
