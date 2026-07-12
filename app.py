@@ -61,10 +61,15 @@ def logout():
     session.clear()
     return redirect(url_for("pin"))
 
-@app.route("/panel", methods=["GET", "POST"])
-def panel():
-    if not session.get("staff_activo"):
-        return redirect(url_for("pin"))
+@app.route("/logout")
+def logout():
+    session.clear()
+    conn = get_conexion()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM sesion_salon")
+    conn.commit()
+    conn.close()
+    return redirect(url_for("pin"))
 
     if request.method == "POST":
         celular = request.form.get("celular", "").strip()
