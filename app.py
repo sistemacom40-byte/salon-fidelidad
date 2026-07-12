@@ -78,12 +78,12 @@ def panel():
             nombre = request.form.get("nombre", "").strip() or "Clienta nueva"
             cur.execute(
                 f"INSERT INTO clientas (celular, nombre, visitas, ultima_visita) VALUES ({m}, {m}, {m}, {m})",
-                (celular, nombre, 1, datetime.datetime.now().isoformat())
+                (celular, nombre, 0, datetime.datetime.now().isoformat())
             )
         else:
             nuevas_visitas = clienta["visitas"] + 1
             if nuevas_visitas > 8:
-                nuevas_visitas = 0
+                nuevas_visitas = 1
             cur.execute(
                 f"UPDATE clientas SET visitas = {m}, ultima_visita = {m} WHERE celular = {m}",
                 (nuevas_visitas, datetime.datetime.now().isoformat(), celular)
@@ -163,7 +163,7 @@ def tap(celular):
     else:
         nuevas_visitas = clienta["visitas"] + 1
         if nuevas_visitas > 8:
-            nuevas_visitas = 0
+            nuevas_visitas = 1
         cur.execute(
             f"UPDATE clientas SET visitas = {m}, ultima_visita = {m} WHERE celular = {m}",
             (nuevas_visitas, datetime.datetime.now().isoformat(), celular)
