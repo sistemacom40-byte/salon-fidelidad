@@ -66,6 +66,11 @@ def logout():
     conn.close()
     return redirect(url_for("pin"))
 
+@app.route("/panel", methods=["GET", "POST"])
+def panel():
+    if not session.get("staff_activo"):
+        return redirect(url_for("pin"))
+
     if request.method == "POST":
         celular = request.form.get("celular", "").strip()
         m = marcador()
