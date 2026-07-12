@@ -59,11 +59,6 @@ def pin():
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect(url_for("pin"))
-
-@app.route("/logout")
-def logout():
-    session.clear()
     conn = get_conexion()
     cur = conn.cursor()
     cur.execute("DELETE FROM sesion_salon")
