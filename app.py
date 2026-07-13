@@ -242,10 +242,11 @@ def promo():
         fecha_inicio = request.form.get("fecha_inicio", "")
         fecha_fin = request.form.get("fecha_fin", "")
         cur.execute("DELETE FROM promo")
-        cur.execute(
-            f"INSERT INTO promo (mensaje, fecha_inicio, fecha_fin) VALUES ({m}, {m}, {m})",
-            (mensaje, fecha_inicio, fecha_fin)
-        )
+        if mensaje:
+            cur.execute(
+                f"INSERT INTO promo (mensaje, fecha_inicio, fecha_fin) VALUES ({m}, {m}, {m})",
+                (mensaje, fecha_inicio, fecha_fin)
+            )
         conn.commit()
 
     cur.execute("SELECT * FROM promo ORDER BY id DESC LIMIT 1")
