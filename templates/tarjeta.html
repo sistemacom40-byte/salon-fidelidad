@@ -315,7 +315,8 @@
   </div>
 
   {% if solo_lectura %}
-  <script>
+<script>
+  function reproducirTono() {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
       function tono(freq, inicio, duracion) {
@@ -333,7 +334,10 @@
       tono(784, 0, 0.35);
       tono(1046, 0.18, 0.4);
     } catch (e) {}
-  </script>
-  {% endif %}
+  }
+  document.body.addEventListener("touchstart", reproducirTono, { once: true });
+  document.body.addEventListener("click", reproducirTono, { once: true });
+</script>
+{% endif %}
 </body>
 </html>
