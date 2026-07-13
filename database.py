@@ -87,6 +87,9 @@ def crear_tablas():
             )
         """)
 
+    if USANDO_POSTGRES:
+        cur.execute("ALTER TABLE promo ADD COLUMN IF NOT EXISTS fecha_inicio TEXT")
+        cur.execute("ALTER TABLE promo ADD COLUMN IF NOT EXISTS fecha_fin TEXT")
     conn.commit()
     conn.close()
 
