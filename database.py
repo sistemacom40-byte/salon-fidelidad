@@ -33,7 +33,8 @@ def crear_tablas():
             CREATE TABLE IF NOT EXISTS promo (
                 id SERIAL PRIMARY KEY,
                 mensaje TEXT,
-                fecha_expira TEXT
+                fecha_inicio TEXT,
+                fecha_fin TEXT
             )
         """)
 
@@ -41,6 +42,14 @@ def crear_tablas():
             CREATE TABLE IF NOT EXISTS sesion_salon (
                 id SERIAL PRIMARY KEY,
                 activo_hasta TIMESTAMP
+            )
+        """)
+
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS configuracion (
+                id SERIAL PRIMARY KEY,
+                whatsapp_numero TEXT,
+                whatsapp_mensaje TEXT
             )
         """)
     else:
@@ -58,7 +67,8 @@ def crear_tablas():
             CREATE TABLE IF NOT EXISTS promo (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 mensaje TEXT,
-                fecha_expira TEXT
+                fecha_inicio TEXT,
+                fecha_fin TEXT
             )
         """)
 
@@ -66,6 +76,14 @@ def crear_tablas():
             CREATE TABLE IF NOT EXISTS sesion_salon (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 activo_hasta TEXT
+            )
+        """)
+
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS configuracion (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                whatsapp_numero TEXT,
+                whatsapp_mensaje TEXT
             )
         """)
 
