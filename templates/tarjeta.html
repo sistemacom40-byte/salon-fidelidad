@@ -240,6 +240,16 @@
 <body>
   <div class="scene">
 
+    {% if not solo_lectura %}
+      {% with mensajes = get_flashed_messages() %}
+        {% if mensajes %}
+          {% for m in mensajes %}
+            <p class="aviso-lectura" style="background:#d4edda; color:#1e5c2f;">{{ m }}</p>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    {% endif %}
+
     {% if solo_lectura %}
       <div class="welcome">
         <p class="welcome-eyebrow">Tarjeta digital VIP</p>
@@ -319,7 +329,6 @@
     function reproducirTono() {
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        ctx.resume();
         function tono(freq, inicio, duracion) {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();

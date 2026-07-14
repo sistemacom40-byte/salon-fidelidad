@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, redirect, url_for
+from flask import Flask, render_template, request, session, redirect, url_for, flash
 from database import get_conexion, USANDO_POSTGRES, crear_tablas
 import datetime
 from zoneinfo import ZoneInfo
@@ -34,7 +34,7 @@ def formatear_fecha(fecha_iso):
         return "Sin visitas registradas"
     try:
         dt = datetime.datetime.fromisoformat(fecha_iso)
-        meses = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
+        meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
         return f"{dt.day} {meses[dt.month - 1]}, {dt.hour:02d}:{dt.minute:02d}"
     except Exception:
         return "Sin visitas registradas"
@@ -45,7 +45,7 @@ def formatear_fecha_corta(fecha_iso):
         return ""
     try:
         dt = datetime.datetime.fromisoformat(fecha_iso)
-        meses = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
+        meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
         return f"{dt.day} {meses[dt.month - 1]}"
     except Exception:
         return ""
@@ -145,6 +145,7 @@ def panel():
 
         conn.commit()
         conn.close()
+        flash("Visita registrada correctamente ✅")
         return redirect(url_for("tarjeta", celular=celular))
 
     return render_template("panel.html")
@@ -267,6 +268,9 @@ def promo():
                 f"INSERT INTO promo (mensaje, fecha_inicio, fecha_fin) VALUES ({m}, {m}, {m})",
                 (mensaje, fecha_inicio, fecha_fin)
             )
+            flash("Promoción guardada correctamente ✅")
+        else:
+            flash("Promoción eliminada ✅")
         conn.commit()
 
     cur.execute("SELECT * FROM promo ORDER BY id DESC LIMIT 1")
@@ -301,6 +305,7 @@ def configuracion():
         )
         conn.commit()
         conn.close()
+        flash("WhatsApp del salón actualizado correctamente ✅")
         return redirect(url_for("promo"))
 
     conn.close()
