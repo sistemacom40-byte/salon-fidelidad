@@ -15,6 +15,12 @@ def get_conexion():
     return conn
 
 
+def _columna_existe_sqlite(cur, tabla, columna):
+    cur.execute(f"PRAGMA table_info({tabla})")
+    columnas = [fila[1] for fila in cur.fetchall()]
+    return columna in columnas
+
+
 def crear_tablas():
     conn = get_conexion()
     cur = conn.cursor()
@@ -52,6 +58,10 @@ def crear_tablas():
                 whatsapp_mensaje TEXT
             )
         """)
+
+        cur.execute("ALTER TABLE promo ADD COLUMN IF NOT EXISTS fecha_inicio TEXT")
+        cur.execute("ALTER TABLE promo ADD COLUMN IF NOT EXISTS fecha_fin TEXT")
+
     else:
         cur.execute("""
             CREATE TABLE IF NOT EXISTS clientas (
@@ -87,9 +97,12 @@ def crear_tablas():
             )
         """)
 
-    if USANDO_POSTGRES:
-        cur.execute("ALTER TABLE promo ADD COLUMN IF NOT EXISTS fecha_inicio TEXT")
-        cur.execute("ALTER TABLE promo ADD COLUMN IF NOT EXISTS fecha_fin TEXT")
+        # SQLite no soporta "ADD COLUMN IF NOT EXISTS", hay que checar manualmente
+        if not _columna_existe_sqlite(cur, "promo", "fecha_inicio"):
+            cur.execute("ALTER TABLE promo ADD COLUMN fecha_inicio TEXT")
+        if not _columna_existe_sqlite(cur, "promo", "fecha_fin"):
+            cur.execute("ALTER TABLE promo ADD COLUMN fecha_fin TEXT")
+
     conn.commit()
     conn.close()
 

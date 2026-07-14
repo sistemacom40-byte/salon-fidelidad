@@ -148,7 +148,6 @@
       margin-top: 12px;
     }
 
-    /* Promo — rediseñada, más elegante */
     .promo-card {
       position: relative;
       margin-top: 12px;
@@ -314,30 +313,39 @@
     {% endif %}
   </div>
 
-  {% if solo_lectura %}
-<script>
-  function reproducirTono() {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      function tono(freq, inicio, duracion) {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = "sine";
-        osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0, ctx.currentTime + inicio);
-        gain.gain.linearRampToValueAtTime(0.06, ctx.currentTime + inicio + 0.05);
-        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + inicio + duracion);
-        osc.connect(gain).connect(ctx.destination);
-        osc.start(ctx.currentTime + inicio);
-        osc.stop(ctx.currentTime + inicio + duracion);
-      }
-      tono(784, 0, 0.35);
-      tono(1046, 0.18, 0.4);
-    } catch (e) {}
-  }
-  document.body.addEventListener("touchstart", reproducirTono, { once: true });
-  document.body.addEventListener("click", reproducirTono, { once: true });
-</script>
-{% endif %}
+  <script>
+    const TEXTO_VOZ = {% if solo_lectura %}{% if visitas >= 8 %}{{ ("Bienvenida, " ~ nombre.split(' ')[0] ~ ". Has ganado tu 15 por ciento de descuento") | tojson }}{% else %}{{ ("Bienvenida, " ~ nombre.split(' ')[0]) | tojson }}{% endif %}{% else %}{{ "Visita registrada, gracias por venir" | tojson }}{% endif %};
+
+    function reproducirTono() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        function tono(freq, inicio, duracion) {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0, ctx.currentTime + inicio);
+          gain.gain.linearRampToValueAtTime(0.06, ctx.currentTime + inicio + 0.05);
+          gain.gain.linearRampToValueAtTime(0, ctx.currentTime + inicio + duracion);
+          osc.connect(gain).connect(ctx.destination);
+          osc.start(ctx.currentTime + inicio);
+          osc.stop(ctx.currentTime + inicio + duracion);
+        }
+        tono(784, 0, 0.35);
+        tono(1046, 0.18, 0.4);
+      } catch (e) {}
+
+      try {
+        const mensaje = new SpeechSynthesisUtterance(TEXTO_VOZ);
+        mensaje.lang = "es-ES";
+        mensaje.pitch = 1.1;
+        mensaje.rate = 0.95;
+        window.speechSynthesis.speak(mensaje);
+      } catch (e) {}
+    }
+    document.addEventListener("touchstart", reproducirTono, { once: true, capture: true });
+    document.addEventListener("click", reproducirTono, { once: true, capture: true });
+    document.addEventListener("touchend", reproducirTono, { once: true, capture: true });
+  </script>
 </body>
 </html>
