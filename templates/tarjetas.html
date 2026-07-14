@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestionar tarjetas</title>
+  <style>
+    body {
+      margin: 0; min-height: 100vh;
+      background: linear-gradient(160deg, #e7ddc2, #c9bd97);
+      font-family: sans-serif;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px 14px;
+    }
+    .box { background: white; padding: 28px; border-radius: 16px; width: 320px; max-width: 100%; }
+    input {
+      width: 100%; padding: 12px; font-size: 16px;
+      border: 1px solid #ccc; border-radius: 8px; margin: 10px 0;
+      box-sizing: border-box;
+    }
+    button, .btn {
+      width: 100%; padding: 12px; background: #3f7a3a; color: white;
+      border: none; border-radius: 8px; font-size: 16px;
+      margin-top: 8px; display: block; text-align: center;
+      text-decoration: none; box-sizing: border-box; cursor: pointer;
+    }
+    .btn-reactivar { background: #3f7a3a; }
+    .btn-desactivar { background: white; color: #b26b00; border: 1px solid #f0d9a0; }
+    .btn-eliminar { background: white; color: #b23; border: 1px solid #e5b8b8; }
+    .mensaje-ok {
+      background: #d4edda; color: #1e5c2f; padding: 10px; border-radius: 8px;
+      text-align: center; font-size: 13px; font-weight: 600; margin-bottom: 12px;
+    }
+    .info {
+      background: #f4f1e6; border-radius: 10px; padding: 14px; margin-top: 14px;
+      font-size: 14px; color: #333;
+    }
+    .info b { color: #2b5a27; }
+    .estado { font-weight: 700; }
+    .estado-activa { color: #2b5a27; }
+    .estado-inactiva { color: #b23; }
+    a.volver { display: block; text-align: center; margin-top: 16px; font-size: 13px; color: #555; }
+    .no-encontrada { text-align: center; font-size: 13px; color: #b23; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>🗂️ Gestionar tarjetas</h2>
+
+    {% with mensajes = get_flashed_messages() %}
+      {% if mensajes %}
+        {% for m in mensajes %}
+          <p class="mensaje-ok">{{ m }}</p>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="GET" action="{{ url_for('tarjetas') }}">
+      <input type="tel" name="celular" placeholder="Número de celular" value="{{ celular_buscado }}" required>
+      <button type="submit">Buscar tarjeta</button>
+    </form>
+
+    {% if celular_buscado and not clienta %}
+      <p class="no-encontrada">No se encontró ninguna tarjeta con ese celular.</p>
+    {% endif %}
+
+    {% if clienta %}
+      <div class="info">
+        <p><b>Nombre:</b> {{ clienta.nombre }}</p>
+        <p><b>Celular:</b> {{ clienta.celular }}</p>
+        <p><b>Visitas:</b> {{ clienta.visitas }} / 8</p>
+        <p><b>Estado:</b>
+          {% if clienta.activo %}
+            <span class="estado estado-activa">Activa</span>
+          {% else %}
+            <span class="estado estado-inactiva">Desactivada</span>
+          {% endif %}
+        </p>
+      </div>
+
+      <form method="POST" action="{{ url_for('tarjetas_toggle', celular=clienta.celular) }}">
+        {% if clienta.activo %}
+          <button type="submit" class="btn-desactivar">🚫 Desactivar tarjeta</button>
+        {% else %}
+          <button type="submit" class="btn-reactivar">✅ Reactivar tarjeta</button>
+        {% endif %}
+      </form>
+
+      <form method="POST" action="{{ url_for('tarjetas_eliminar', celular=clienta.celular) }}"
+            onsubmit="return confirm('¿Eliminar esta tarjeta permanentemente? Esta acción no se puede deshacer.');">
+        <button type="submit" class="btn-eliminar">🗑️ Eliminar tarjeta permanentemente</button>
+      </form>
+    {% endif %}
+
+    <a class="volver" href="{{ url_for('panel') }}">← Volver al panel</a>
+  </div>
+</body>
+</html>

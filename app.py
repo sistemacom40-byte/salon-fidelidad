@@ -195,6 +195,10 @@ def tap(celular):
         conn.close()
         return "Tarjeta no reconocida. Pide ayuda al personal del salón."
 
+    if not clienta["activo"]:
+        conn.close()
+        return "Esta tarjeta fue desactivada. Pide ayuda al personal del salón."
+
     salon_activo = request.cookies.get("celular_autorizado") == "si"
 
     if not salon_activo:
@@ -343,6 +347,64 @@ def panel_ajuste_pin():
         conn.close()
 
     return render_template("cambiar_pin.html", error=error, exito=exito)
+
+
+@app.route("/tarjetas", methods=["GET"])
+def tarjetas():
+    if not session.get("staff_activo"):
+        return redirect(url_for("pin"))
+
+    celular_buscado = request.args.get("celular", "").strip()
+    clienta = None
+
+    if celular_buscado:
+        m = marcador()
+        conn = get_conexion()
+        cur = conn.cursor()
+        cur.execute(f"SELECT * FROM clientas WHERE celular = {m}", (celular_buscado,))
+        clienta = cur.fetchone()
+        conn.close()
+
+    return render_template("tarjetas.html", clienta=clienta, celular_buscado=celular_buscado)
+
+
+@app.route("/tarjetas/toggle/<celular>", methods=["POST"])
+def tarjetas_toggle(celular):
+    if not session.get("staff_activo"):
+        return redirect(url_for("pin"))
+
+    m = marcador()
+    conn = get_conexion()
+    cur = conn.cursor()
+    cur.execute(f"SELECT * FROM clientas WHERE celular = {m}", (celular,))
+    clienta = cur.fetchone()
+
+    if clienta is not None:
+        nuevo_estado = 0 if clienta["activo"] else 1
+        cur.execute(f"UPDATE clientas SET activo = {m} WHERE celular = {m}", (nuevo_estado, celular))
+        conn.commit()
+        if nuevo_estado == 0:
+            flash("Tarjeta desactivada ✅")
+        else:
+            flash("Tarjeta reactivada ✅")
+
+    conn.close()
+    return redirect(url_for("tarjetas", celular=celular))
+
+
+@app.route("/tarjetas/eliminar/<celular>", methods=["POST"])
+def tarjetas_eliminar(celular):
+    if not session.get("staff_activo"):
+        return redirect(url_for("pin"))
+
+    m = marcador()
+    conn = get_conexion()
+    cur = conn.cursor()
+    cur.execute(f"DELETE FROM clientas WHERE celular = {m}", (celular,))
+    conn.commit()
+    conn.close()
+    flash("Tarjeta eliminada permanentemente ✅")
+    return redirect(url_for("tarjetas"))
 
 
 @app.route("/resumen")
