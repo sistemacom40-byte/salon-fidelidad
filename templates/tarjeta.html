@@ -285,6 +285,15 @@
           <span class="status-value">{{ ultima_visita }}</span>
         </div>
       </div>
+      {% if tarjetas_completadas and tarjetas_completadas > 0 %}
+      <div class="status-row">
+        <span class="status-icon">🏆</span>
+        <div class="status-text">
+          <span class="status-label">Tarjetas completadas</span>
+          <span class="status-value">{{ tarjetas_completadas }}</span>
+        </div>
+      </div>
+      {% endif %}
     </div>
 
     {% if visitas >= 8 %}

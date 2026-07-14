@@ -136,12 +136,18 @@ def panel():
             )
         else:
             nuevas_visitas = clienta["visitas"] + 1
-            if nuevas_visitas > 8:
+            ciclo_completado = nuevas_visitas > 8
+            if ciclo_completado:
                 nuevas_visitas = 1
-            cur.execute(
-                f"UPDATE clientas SET visitas = {m}, ultima_visita = {m} WHERE celular = {m}",
-                (nuevas_visitas, ahora_gt().isoformat(), celular)
-            )
+                cur.execute(
+                    f"UPDATE clientas SET visitas = {m}, ultima_visita = {m}, tarjetas_completadas = tarjetas_completadas + 1 WHERE celular = {m}",
+                    (nuevas_visitas, ahora_gt().isoformat(), celular)
+                )
+            else:
+                cur.execute(
+                    f"UPDATE clientas SET visitas = {m}, ultima_visita = {m} WHERE celular = {m}",
+                    (nuevas_visitas, ahora_gt().isoformat(), celular)
+                )
 
         conn.commit()
         conn.close()
@@ -176,6 +182,7 @@ def tarjeta():
         ultima_visita=formatear_fecha(clienta["ultima_visita"]),
         tamano_nombre=tamano_nombre(clienta["nombre"]),
         solo_lectura=not session.get("staff_activo"),
+        tarjetas_completadas=clienta["tarjetas_completadas"],
         promo=promo_actual["mensaje"] if promo_actual else None,
         promo_fecha_fin=formatear_fecha_corta(promo_actual["fecha_fin"]) if promo_actual else None,
         wa_numero=wa_numero,
@@ -213,6 +220,7 @@ def tap(celular):
             ultima_visita=formatear_fecha(clienta["ultima_visita"]),
             tamano_nombre=tamano_nombre(clienta["nombre"]),
             solo_lectura=True,
+            tarjetas_completadas=clienta["tarjetas_completadas"],
             promo=promo_actual["mensaje"] if promo_actual else None,
             promo_fecha_fin=formatear_fecha_corta(promo_actual["fecha_fin"]) if promo_actual else None,
             wa_numero=wa_numero,
@@ -220,12 +228,18 @@ def tap(celular):
         )
     else:
         nuevas_visitas = clienta["visitas"] + 1
-        if nuevas_visitas > 8:
+        ciclo_completado = nuevas_visitas > 8
+        if ciclo_completado:
             nuevas_visitas = 1
-        cur.execute(
-            f"UPDATE clientas SET visitas = {m}, ultima_visita = {m} WHERE celular = {m}",
-            (nuevas_visitas, ahora_gt().isoformat(), celular)
-        )
+            cur.execute(
+                f"UPDATE clientas SET visitas = {m}, ultima_visita = {m}, tarjetas_completadas = tarjetas_completadas + 1 WHERE celular = {m}",
+                (nuevas_visitas, ahora_gt().isoformat(), celular)
+            )
+        else:
+            cur.execute(
+                f"UPDATE clientas SET visitas = {m}, ultima_visita = {m} WHERE celular = {m}",
+                (nuevas_visitas, ahora_gt().isoformat(), celular)
+            )
         conn.commit()
         conn.close()
         return redirect(url_for("tarjeta", celular=celular))
