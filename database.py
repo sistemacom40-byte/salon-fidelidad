@@ -110,3 +110,4 @@ def crear_tablas():
 if __name__ == "__main__":
     crear_tablas()
     print("Base de datos creada correctamente ✅")
+    

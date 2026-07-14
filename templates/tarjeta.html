@@ -343,9 +343,16 @@
         window.speechSynthesis.speak(mensaje);
       } catch (e) {}
     }
-    document.addEventListener("touchstart", reproducirTono, { once: true, capture: true });
-    document.addEventListener("click", reproducirTono, { once: true, capture: true });
-    document.addEventListener("touchend", reproducirTono, { once: true, capture: true });
+
+    let yaSono = false;
+    function reproducirTonoUnaVez() {
+      if (yaSono) return;
+      yaSono = true;
+      reproducirTono();
+    }
+    document.addEventListener("touchstart", reproducirTonoUnaVez, { once: true, capture: true });
+    document.addEventListener("click", reproducirTonoUnaVez, { once: true, capture: true });
+    document.addEventListener("touchend", reproducirTonoUnaVez, { once: true, capture: true });
   </script>
 </body>
 </html>
