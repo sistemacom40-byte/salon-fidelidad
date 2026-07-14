@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cambiar PIN</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --cream:#F6F1E4;
+      --ink:#2B2A24;
+      --leaf:#3F7A3A;
+      --leaf-dark:#2B5A27;
+      --grey:#7C7562;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(160deg, #e7ddc2, #c9bd97);
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 14px;
+    }
+    .card {
+      width: 100%;
+      max-width: 380px;
+      background: rgba(255,255,255,0.9);
+      border-radius: 16px;
+      padding: 28px 24px;
+      box-shadow: 0 24px 40px -18px rgba(50,38,10,0.35);
+    }
+    h1 {
+      font-family: 'Fraunces', serif;
+      font-weight: 500;
+      font-size: 20px;
+      color: var(--leaf-dark);
+      margin: 0 0 18px;
+      text-align: center;
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--grey);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin: 14px 0 6px;
+    }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #ddd3b8;
+      font-size: 16px;
+      font-family: inherit;
+    }
+    button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 13px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--leaf), var(--leaf-dark));
+      color: white;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .msg {
+      text-align: center;
+      font-size: 13.5px;
+      font-weight: 600;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
+    .msg-error { background: #fbe4e4; color: #a33; }
+    .msg-exito { background: #e4f2e0; color: var(--leaf-dark); }
+    .volver {
+      display: block;
+      text-align: center;
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--grey);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🍃 Cambiar PIN de acceso</h1>
+
+    {% if error %}
+      <p class="msg msg-error">{{ error }}</p>
+    {% endif %}
+    {% if exito %}
+      <p class="msg msg-exito">{{ exito }}</p>
+    {% endif %}
+
+    <form method="POST">
+      <label>PIN actual</label>
+      <input type="password" name="pin_actual" inputmode="numeric" maxlength="4" required>
+
+      <label>Nuevo PIN (4 dígitos)</label>
+      <input type="password" name="pin_nuevo" inputmode="numeric" maxlength="4" required>
+
+      <label>Confirmar nuevo PIN</label>
+      <input type="password" name="pin_nuevo_confirmar" inputmode="numeric" maxlength="4" required>
+
+      <button type="submit">Guardar nuevo PIN</button>
+    </form>
+
+    <a class="volver" href="{{ url_for('panel') }}">← Volver al panel</a>
+  </div>
+</body>
+</html>

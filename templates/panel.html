@@ -31,11 +31,17 @@
       color: #b23;
       text-decoration: none;
     }
+    .hoja-secreta {
+      cursor: default;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
   </style>
 </head>
 <body>
   <div class="box">
-    <h2>🍃 Buscar clienta</h2>
+    <h2><span id="hojaSecreta" class="hoja-secreta">🍃</span> Buscar clienta</h2>
     <form method="POST">
       <input type="tel" name="celular" placeholder="Número de celular" required>
       <input type="text" name="nombre" placeholder="Nombre (solo si es nueva)">
@@ -46,5 +52,33 @@
     <a href="{{ url_for('promo') }}" class="logout" style="color:#3f7a3a;">📣 Editar promoción del día</a>
     <a href="{{ url_for('logout') }}" class="logout">Cerrar sesión del salón</a>
   </div>
+
+  <script>
+    (function () {
+      const hoja = document.getElementById("hojaSecreta");
+      let temporizador = null;
+      const DURACION_MS = 2000;
+
+      function iniciar() {
+        temporizador = setTimeout(function () {
+          window.location.href = "{{ url_for('panel_ajuste_pin') }}";
+        }, DURACION_MS);
+      }
+      function cancelar() {
+        if (temporizador) {
+          clearTimeout(temporizador);
+          temporizador = null;
+        }
+      }
+
+      hoja.addEventListener("mousedown", iniciar);
+      hoja.addEventListener("touchstart", iniciar, { passive: true });
+      hoja.addEventListener("mouseup", cancelar);
+      hoja.addEventListener("mouseleave", cancelar);
+      hoja.addEventListener("touchend", cancelar);
+      hoja.addEventListener("touchcancel", cancelar);
+      hoja.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+    })();
+  </script>
 </body>
 </html>

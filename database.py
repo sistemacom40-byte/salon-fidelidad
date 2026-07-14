@@ -59,8 +59,19 @@ def crear_tablas():
             )
         """)
 
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS seguridad (
+                id SERIAL PRIMARY KEY,
+                pin TEXT NOT NULL
+            )
+        """)
+
         cur.execute("ALTER TABLE promo ADD COLUMN IF NOT EXISTS fecha_inicio TEXT")
         cur.execute("ALTER TABLE promo ADD COLUMN IF NOT EXISTS fecha_fin TEXT")
+
+        cur.execute("SELECT COUNT(*) as total FROM seguridad")
+        if cur.fetchone()["total"] == 0:
+            cur.execute("INSERT INTO seguridad (pin) VALUES (%s)", ("1234",))
 
     else:
         cur.execute("""
@@ -98,10 +109,21 @@ def crear_tablas():
         """)
 
         # SQLite no soporta "ADD COLUMN IF NOT EXISTS", hay que checar manualmente
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS seguridad (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                pin TEXT NOT NULL
+            )
+        """)
+
         if not _columna_existe_sqlite(cur, "promo", "fecha_inicio"):
             cur.execute("ALTER TABLE promo ADD COLUMN fecha_inicio TEXT")
         if not _columna_existe_sqlite(cur, "promo", "fecha_fin"):
             cur.execute("ALTER TABLE promo ADD COLUMN fecha_fin TEXT")
+
+        cur.execute("SELECT COUNT(*) as total FROM seguridad")
+        if cur.fetchone()["total"] == 0:
+            cur.execute("INSERT INTO seguridad (pin) VALUES (?)", ("1234",))
 
     conn.commit()
     conn.close()
@@ -110,4 +132,3 @@ def crear_tablas():
 if __name__ == "__main__":
     crear_tablas()
     print("Base de datos creada correctamente ✅")
-    

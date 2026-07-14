@@ -6,11 +6,22 @@ app = Flask(__name__)
 app.secret_key = "cambiar-esto-luego"
 app.permanent_session_lifetime = datetime.timedelta(hours=12)
 crear_tablas()
-PIN_CORRECTO = "1234"
 
 
 def marcador():
     return "%s" if USANDO_POSTGRES else "?"
+
+
+def obtener_pin(cur):
+    cur.execute("SELECT * FROM seguridad ORDER BY id DESC LIMIT 1")
+    fila = cur.fetchone()
+    return fila["pin"] if fila else "1234"
+
+
+def actualizar_pin(cur, nuevo_pin):
+    cur.execute("DELETE FROM seguridad")
+    m = marcador()
+    cur.execute(f"INSERT INTO seguridad (pin) VALUES ({m})", (nuevo_pin,))
 
 
 def formatear_fecha(fecha_iso):
@@ -76,7 +87,11 @@ def pin():
     error = None
     if request.method == "POST":
         pin_ingresado = request.form.get("pin", "")
-        if pin_ingresado == PIN_CORRECTO:
+        conn = get_conexion()
+        cur = conn.cursor()
+        pin_correcto = obtener_pin(cur)
+        conn.close()
+        if pin_ingresado == pin_correcto:
             session.permanent = True
             session["staff_activo"] = True
             resp = redirect(url_for("panel"))
@@ -285,6 +300,39 @@ def configuracion():
 
     conn.close()
     return redirect(url_for("promo"))
+
+
+@app.route("/panel-ajuste-pin", methods=["GET", "POST"])
+def panel_ajuste_pin():
+    if not session.get("staff_activo"):
+        return redirect(url_for("pin"))
+
+    error = None
+    exito = None
+
+    if request.method == "POST":
+        pin_actual = request.form.get("pin_actual", "").strip()
+        pin_nuevo = request.form.get("pin_nuevo", "").strip()
+        pin_nuevo_confirmar = request.form.get("pin_nuevo_confirmar", "").strip()
+
+        conn = get_conexion()
+        cur = conn.cursor()
+        pin_real = obtener_pin(cur)
+
+        if pin_actual != pin_real:
+            error = "El PIN actual no es correcto."
+        elif not pin_nuevo.isdigit() or len(pin_nuevo) != 4:
+            error = "El nuevo PIN debe tener exactamente 4 dígitos."
+        elif pin_nuevo != pin_nuevo_confirmar:
+            error = "Los PIN nuevos no coinciden."
+        else:
+            actualizar_pin(cur, pin_nuevo)
+            conn.commit()
+            exito = "PIN actualizado correctamente."
+
+        conn.close()
+
+    return render_template("cambiar_pin.html", error=error, exito=exito)
 
 
 @app.route("/resumen")
