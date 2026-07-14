@@ -1,10 +1,15 @@
 from flask import Flask, render_template, request, session, redirect, url_for
 from database import get_conexion, USANDO_POSTGRES, crear_tablas
 import datetime
+from zoneinfo import ZoneInfo
 
 app = Flask(__name__)
 app.secret_key = "cambiar-esto-luego"
 app.permanent_session_lifetime = datetime.timedelta(hours=12)
+
+
+def ahora_gt():
+    return datetime.datetime.now(ZoneInfo("America/Guatemala")).replace(tzinfo=None)
 crear_tablas()
 
 
@@ -63,7 +68,7 @@ def obtener_promo_vigente(cur):
     promo_actual = cur.fetchone()
     if not promo_actual or not promo_actual["fecha_inicio"] or not promo_actual["fecha_fin"]:
         return None
-    ahora = datetime.datetime.now()
+    ahora = ahora_gt()
     inicio = datetime.datetime.fromisoformat(promo_actual["fecha_inicio"])
     fin = datetime.datetime.fromisoformat(promo_actual["fecha_fin"])
     if inicio <= ahora <= fin:
@@ -127,7 +132,7 @@ def panel():
             nombre = request.form.get("nombre", "").strip() or "Clienta nueva"
             cur.execute(
                 f"INSERT INTO clientas (celular, nombre, visitas, ultima_visita) VALUES ({m}, {m}, {m}, {m})",
-                (celular, nombre, 0, datetime.datetime.now().isoformat())
+                (celular, nombre, 0, ahora_gt().isoformat())
             )
         else:
             nuevas_visitas = clienta["visitas"] + 1
@@ -135,7 +140,7 @@ def panel():
                 nuevas_visitas = 1
             cur.execute(
                 f"UPDATE clientas SET visitas = {m}, ultima_visita = {m} WHERE celular = {m}",
-                (nuevas_visitas, datetime.datetime.now().isoformat(), celular)
+                (nuevas_visitas, ahora_gt().isoformat(), celular)
             )
 
         conn.commit()
@@ -214,7 +219,7 @@ def tap(celular):
             nuevas_visitas = 1
         cur.execute(
             f"UPDATE clientas SET visitas = {m}, ultima_visita = {m} WHERE celular = {m}",
-            (nuevas_visitas, datetime.datetime.now().isoformat(), celular)
+            (nuevas_visitas, ahora_gt().isoformat(), celular)
         )
         conn.commit()
         conn.close()
