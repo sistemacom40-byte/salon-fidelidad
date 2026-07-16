@@ -246,6 +246,7 @@
           {% for m in mensajes %}
             <p class="aviso-lectura" style="background:#d4edda; color:#1e5c2f;">{{ m }}</p>
           {% endfor %}
+          <div id="disparadorConfeti" style="display:none;"></div>
         {% endif %}
       {% endwith %}
     {% endif %}
@@ -372,6 +373,48 @@
     document.addEventListener("touchstart", reproducirTonoUnaVez, { once: true, capture: true });
     document.addEventListener("click", reproducirTonoUnaVez, { once: true, capture: true });
     document.addEventListener("touchend", reproducirTonoUnaVez, { once: true, capture: true });
+
+    function lanzarConfeti() {
+      const colores = ["#3F7A3A", "#C9A24B", "#8FBF7F", "#F0DE9E", "#2B5A27"];
+      const cantidad = 60;
+      for (let i = 0; i < cantidad; i++) {
+        const pieza = document.createElement("div");
+        const color = colores[Math.floor(Math.random() * colores.length)];
+        const izquierda = Math.random() * 100;
+        const retraso = Math.random() * 0.4;
+        const duracion = 2.2 + Math.random() * 1.2;
+        const tamano = 6 + Math.random() * 6;
+        const giro = Math.random() * 360;
+        const esCirculo = Math.random() > 0.5;
+
+        pieza.style.position = "fixed";
+        pieza.style.top = "-20px";
+        pieza.style.left = izquierda + "vw";
+        pieza.style.width = tamano + "px";
+        pieza.style.height = tamano + "px";
+        pieza.style.background = color;
+        pieza.style.opacity = "0.9";
+        pieza.style.borderRadius = esCirculo ? "50%" : "2px";
+        pieza.style.transform = "rotate(" + giro + "deg)";
+        pieza.style.zIndex = "9999";
+        pieza.style.pointerEvents = "none";
+        pieza.style.animation = "caerConfeti " + duracion + "s ease-in " + retraso + "s forwards";
+
+        document.body.appendChild(pieza);
+        setTimeout(function () { pieza.remove(); }, (duracion + retraso) * 1000 + 100);
+      }
+    }
+
+    if (document.getElementById("disparadorConfeti")) {
+      const estiloConfeti = document.createElement("style");
+      estiloConfeti.textContent =
+        "@keyframes caerConfeti {" +
+        "0% { transform: translateY(0) rotate(0deg); opacity: 0.9; }" +
+        "100% { transform: translateY(105vh) rotate(360deg); opacity: 0; }" +
+        "}";
+      document.head.appendChild(estiloConfeti);
+      lanzarConfeti();
+    }
   </script>
 </body>
 </html>

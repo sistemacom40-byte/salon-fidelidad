@@ -242,6 +242,7 @@ def tap(celular):
             )
         conn.commit()
         conn.close()
+        flash("Visita registrada correctamente ✅")
         return redirect(url_for("tarjeta", celular=celular))
 
 
