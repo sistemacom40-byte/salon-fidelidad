@@ -13,6 +13,7 @@
       padding: 24px 14px;
     }
     .box { background: white; padding: 28px; border-radius: 16px; width: 320px; max-width: 100%; }
+    .columna { display: flex; flex-direction: column; gap: 16px; align-items: center; width: 100%; }
     input {
       width: 100%; padding: 12px; font-size: 16px;
       border: 1px solid #ccc; border-radius: 8px; margin: 10px 0;
@@ -57,6 +58,7 @@
   </style>
 </head>
 <body>
+  <div class="columna">
   <div class="box">
     <h2>🗂️ Gestionar tarjetas</h2>
 
@@ -109,7 +111,7 @@
     <a class="volver" href="{{ url_for('panel') }}">← Volver al panel</a>
   </div>
 
-  <div class="box" style="margin-top:16px;">
+  <div class="box">
     <h2>📋 Todas las clientas ({{ todas_las_clientas|length }})</h2>
 
     {% if todas_las_clientas %}
@@ -139,6 +141,7 @@
     {% else %}
       <p style="text-align:center; color:#888; font-size:13px;">No hay clientas registradas todavía.</p>
     {% endif %}
+  </div>
   </div>
 </body>
 </html>
