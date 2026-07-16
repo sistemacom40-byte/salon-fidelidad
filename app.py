@@ -371,15 +371,24 @@ def tarjetas():
     celular_buscado = request.args.get("celular", "").strip()
     clienta = None
 
+    m = marcador()
+    conn = get_conexion()
+    cur = conn.cursor()
+
     if celular_buscado:
-        m = marcador()
-        conn = get_conexion()
-        cur = conn.cursor()
         cur.execute(f"SELECT * FROM clientas WHERE celular = {m}", (celular_buscado,))
         clienta = cur.fetchone()
-        conn.close()
 
-    return render_template("tarjetas.html", clienta=clienta, celular_buscado=celular_buscado)
+    cur.execute("SELECT * FROM clientas ORDER BY nombre")
+    todas_las_clientas = cur.fetchall()
+    conn.close()
+
+    return render_template(
+        "tarjetas.html",
+        clienta=clienta,
+        celular_buscado=celular_buscado,
+        todas_las_clientas=todas_las_clientas,
+    )
 
 
 @app.route("/tarjetas/toggle/<celular>", methods=["POST"])

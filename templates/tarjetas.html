@@ -41,6 +41,19 @@
     .estado-inactiva { color: #b23; }
     a.volver { display: block; text-align: center; margin-top: 16px; font-size: 13px; color: #555; }
     .no-encontrada { text-align: center; font-size: 13px; color: #b23; margin-top: 10px; }
+    .fila-clienta {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0; border-bottom: 1px solid #eee; gap: 10px;
+    }
+    .fila-clienta:last-child { border-bottom: none; }
+    .fila-acciones { display: flex; gap: 6px; flex-shrink: 0; }
+    .btn-mini {
+      width: auto; padding: 7px 10px; font-size: 12px; margin: 0;
+      border-radius: 6px; border: none; cursor: pointer;
+    }
+    .btn-desactivar.btn-mini { background: white; color: #b26b00; border: 1px solid #f0d9a0; }
+    .btn-reactivar.btn-mini { background: #3f7a3a; color: white; }
+    .btn-eliminar-mini { background: white; color: #b23; border: 1px solid #e5b8b8; }
   </style>
 </head>
 <body>
@@ -94,6 +107,38 @@
     {% endif %}
 
     <a class="volver" href="{{ url_for('panel') }}">← Volver al panel</a>
+  </div>
+
+  <div class="box" style="margin-top:16px;">
+    <h2>📋 Todas las clientas ({{ todas_las_clientas|length }})</h2>
+
+    {% if todas_las_clientas %}
+      {% for c in todas_las_clientas %}
+        <div class="fila-clienta">
+          <div>
+            <b>{{ c.nombre }}</b><br>
+            <span style="font-size:12px; color:#777;">{{ c.celular }} ·
+              {% if c.activo %}<span class="estado estado-activa">Activa</span>{% else %}<span class="estado estado-inactiva">Desactivada</span>{% endif %}
+            </span>
+          </div>
+          <div class="fila-acciones">
+            <form method="POST" action="{{ url_for('tarjetas_toggle', celular=c.celular) }}">
+              {% if c.activo %}
+                <button type="submit" class="btn-mini btn-desactivar">Desactivar</button>
+              {% else %}
+                <button type="submit" class="btn-mini btn-reactivar">Reactivar</button>
+              {% endif %}
+            </form>
+            <form method="POST" action="{{ url_for('tarjetas_eliminar', celular=c.celular) }}"
+                  onsubmit="return confirm('¿Eliminar la tarjeta de {{ c.nombre }} permanentemente?');">
+              <button type="submit" class="btn-mini btn-eliminar-mini">Eliminar</button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p style="text-align:center; color:#888; font-size:13px;">No hay clientas registradas todavía.</p>
+    {% endif %}
   </div>
 </body>
 </html>
