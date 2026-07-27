@@ -55,6 +55,24 @@
     .btn-desactivar.btn-mini { background: white; color: #b26b00; border: 1px solid #f0d9a0; }
     .btn-reactivar.btn-mini { background: #3f7a3a; color: white; }
     .btn-eliminar-mini { background: white; color: #b23; border: 1px solid #e5b8b8; }
+    .btn-whatsapp-mini {
+      background: #25D366; color: white; text-decoration: none;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .aviso-sin-promo {
+      text-align: center; font-size: 12px; color: #999; margin-bottom: 10px;
+    }
+    .rafaga { margin-bottom: 16px; }
+    .btn-rafaga {
+      display: block; text-align: center; text-decoration: none;
+      background: #25D366; color: white; font-weight: 700; font-size: 14px;
+      padding: 12px; border-radius: 8px;
+    }
+    .rafaga-completo {
+      text-align: center; font-size: 13px; font-weight: 600; color: #2b5a27;
+      background: #e4f2e0; padding: 10px; border-radius: 8px; margin-bottom: 8px;
+    }
+    .btn-reiniciar { width: 100%; background: white; color: #555; border: 1px solid #ccc; }
   </style>
 </head>
 <body>
@@ -114,6 +132,23 @@
   <div class="box">
     <h2>📋 Todas las clientas ({{ todas_las_clientas|length }})</h2>
 
+    {% if not promo_activa %}
+      <p class="aviso-sin-promo">No hay una promoción activa ahora mismo — el botón de WhatsApp aparecerá aquí cuando actives una.</p>
+    {% elif total_con_promo > 0 %}
+      <div class="rafaga">
+        {% if todas_avisadas %}
+          <p class="rafaga-completo">✅ Ya avisaste a todas ({{ avisadas_count }} de {{ total_con_promo }})</p>
+          <form method="POST" action="{{ url_for('avisar_reiniciar') }}">
+            <button type="submit" class="btn-mini btn-reiniciar">🔁 Volver a avisar a todas</button>
+          </form>
+        {% else %}
+          <a href="{{ url_for('avisar_siguiente') }}" class="btn-rafaga">
+            📲 Avisar a la siguiente ({{ avisadas_count }} de {{ total_con_promo }})
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+
     {% if todas_las_clientas %}
       {% for c in todas_las_clientas %}
         <div class="fila-clienta">
@@ -124,6 +159,9 @@
             </span>
           </div>
           <div class="fila-acciones">
+            {% if c.wa_link %}
+              <a href="{{ c.wa_link }}" target="_blank" class="btn-mini btn-whatsapp-mini">📲 Avisar</a>
+            {% endif %}
             <form method="POST" action="{{ url_for('tarjetas_toggle', celular=c.celular) }}">
               {% if c.activo %}
                 <button type="submit" class="btn-mini btn-desactivar">Desactivar</button>

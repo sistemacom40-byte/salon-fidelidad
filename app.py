@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, session, redirect, url_for, f
 from database import get_conexion, USANDO_POSTGRES, crear_tablas
 import datetime
 from zoneinfo import ZoneInfo
+import urllib.parse
 
 app = Flask(__name__)
 app.secret_key = "cambiar-esto-luego"
@@ -15,6 +16,14 @@ crear_tablas()
 
 def marcador():
     return "%s" if USANDO_POSTGRES else "?"
+
+
+def link_whatsapp_clienta(celular, mensaje):
+    numero = "".join(ch for ch in str(celular) if ch.isdigit())
+    if len(numero) == 8:
+        numero = "502" + numero
+    texto = urllib.parse.quote(mensaje)
+    return f"https://wa.me/{numero}?text={texto}"
 
 
 def obtener_pin(cur):
@@ -380,16 +389,99 @@ def tarjetas():
         cur.execute(f"SELECT * FROM clientas WHERE celular = {m}", (celular_buscado,))
         clienta = cur.fetchone()
 
+    promo_actual = obtener_promo_vigente(cur)
+
     cur.execute("SELECT * FROM clientas ORDER BY nombre")
-    todas_las_clientas = cur.fetchall()
+    filas = cur.fetchall()
     conn.close()
+
+    todas_las_clientas = []
+    for fila in filas:
+        item = dict(fila)
+        if promo_actual and item.get("activo"):
+            item["wa_link"] = link_whatsapp_clienta(item["celular"], promo_actual["mensaje"])
+        else:
+            item["wa_link"] = None
+        todas_las_clientas.append(item)
+
+    avisadas_count = 0
+    total_con_promo = 0
+    todas_avisadas = False
+
+    if promo_actual:
+        if session.get("campana_promo_id") != promo_actual["id"]:
+            session["campana_promo_id"] = promo_actual["id"]
+            session["avisadas"] = []
+        avisadas = session.get("avisadas", [])
+        activas_con_promo = [c for c in todas_las_clientas if c["wa_link"]]
+        total_con_promo = len(activas_con_promo)
+        avisadas_count = len([c for c in activas_con_promo if c["celular"] in avisadas])
+        todas_avisadas = total_con_promo > 0 and avisadas_count >= total_con_promo
 
     return render_template(
         "tarjetas.html",
         clienta=clienta,
         celular_buscado=celular_buscado,
         todas_las_clientas=todas_las_clientas,
+        promo_activa=bool(promo_actual),
+        avisadas_count=avisadas_count,
+        total_con_promo=total_con_promo,
+        todas_avisadas=todas_avisadas,
     )
+
+
+@app.route("/tarjetas/avisar-siguiente")
+def avisar_siguiente():
+    if not session.get("staff_activo"):
+        return redirect(url_for("pin"))
+
+    m = marcador()
+    conn = get_conexion()
+    cur = conn.cursor()
+    promo_actual = obtener_promo_vigente(cur)
+
+    if not promo_actual:
+        conn.close()
+        flash("No hay ninguna promoción activa en este momento.")
+        return redirect(url_for("tarjetas"))
+
+    if session.get("campana_promo_id") != promo_actual["id"]:
+        session["campana_promo_id"] = promo_actual["id"]
+        session["avisadas"] = []
+
+    avisadas = session.get("avisadas", [])
+
+    cur.execute(f"SELECT * FROM clientas WHERE activo = {m} ORDER BY nombre", (1,))
+    clientas_activas = cur.fetchall()
+    conn.close()
+
+    siguiente = None
+    for c in clientas_activas:
+        if c["celular"] not in avisadas:
+            siguiente = c
+            break
+
+    if not siguiente:
+        flash("Ya avisaste a todas las clientas activas sobre esta promoción ✅")
+        return redirect(url_for("tarjetas"))
+
+    avisadas.append(siguiente["celular"])
+    session["avisadas"] = avisadas
+    session.modified = True
+
+    link = link_whatsapp_clienta(siguiente["celular"], promo_actual["mensaje"])
+    return redirect(link)
+
+
+@app.route("/tarjetas/avisar-reiniciar", methods=["POST"])
+def avisar_reiniciar():
+    if not session.get("staff_activo"):
+        return redirect(url_for("pin"))
+
+    session["avisadas"] = []
+    session.modified = True
+    flash("Se reinició el conteo. Puedes volver a avisar a todas.")
+    return redirect(url_for("tarjetas"))
 
 
 @app.route("/tarjetas/toggle/<celular>", methods=["POST"])
