@@ -68,6 +68,7 @@ def crear_tablas():
 
         cur.execute("ALTER TABLE promo ADD COLUMN IF NOT EXISTS fecha_inicio TEXT")
         cur.execute("ALTER TABLE promo ADD COLUMN IF NOT EXISTS fecha_fin TEXT")
+        cur.execute("ALTER TABLE promo ADD COLUMN IF NOT EXISTS mensaje_largo TEXT")
         cur.execute("ALTER TABLE clientas ADD COLUMN IF NOT EXISTS activo INTEGER DEFAULT 1")
         cur.execute("ALTER TABLE clientas ADD COLUMN IF NOT EXISTS tarjetas_completadas INTEGER DEFAULT 0")
 
@@ -122,6 +123,8 @@ def crear_tablas():
             cur.execute("ALTER TABLE promo ADD COLUMN fecha_inicio TEXT")
         if not _columna_existe_sqlite(cur, "promo", "fecha_fin"):
             cur.execute("ALTER TABLE promo ADD COLUMN fecha_fin TEXT")
+        if not _columna_existe_sqlite(cur, "promo", "mensaje_largo"):
+            cur.execute("ALTER TABLE promo ADD COLUMN mensaje_largo TEXT")
         if not _columna_existe_sqlite(cur, "clientas", "activo"):
             cur.execute("ALTER TABLE clientas ADD COLUMN activo INTEGER DEFAULT 1")
         if not _columna_existe_sqlite(cur, "clientas", "tarjetas_completadas"):

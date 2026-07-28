@@ -9,6 +9,14 @@ app.secret_key = "cambiar-esto-luego"
 app.permanent_session_lifetime = datetime.timedelta(hours=12)
 
 
+@app.after_request
+def evitar_cache_tarjetas(response):
+    if request.path.startswith("/tarjetas"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+    return response
+
+
 def ahora_gt():
     return datetime.datetime.now(ZoneInfo("America/Guatemala")).replace(tzinfo=None)
 crear_tablas()
@@ -24,6 +32,15 @@ def link_whatsapp_clienta(celular, mensaje):
         numero = "502" + numero
     texto = urllib.parse.quote(mensaje)
     return f"https://wa.me/{numero}?text={texto}"
+
+
+def mensaje_promo_para_whatsapp(promo_actual):
+    if not promo_actual:
+        return ""
+    largo = (promo_actual["mensaje_largo"] or "").strip()
+    if largo:
+        return largo
+    return promo_actual["mensaje"] or ""
 
 
 def obtener_pin(cur):
@@ -288,13 +305,14 @@ def promo():
 
     if request.method == "POST":
         mensaje = request.form.get("mensaje", "").strip()
+        mensaje_largo = request.form.get("mensaje_largo", "").strip()
         fecha_inicio = request.form.get("fecha_inicio", "")
         fecha_fin = request.form.get("fecha_fin", "")
         cur.execute("DELETE FROM promo")
         if mensaje:
             cur.execute(
-                f"INSERT INTO promo (mensaje, fecha_inicio, fecha_fin) VALUES ({m}, {m}, {m})",
-                (mensaje, fecha_inicio, fecha_fin)
+                f"INSERT INTO promo (mensaje, mensaje_largo, fecha_inicio, fecha_fin) VALUES ({m}, {m}, {m}, {m})",
+                (mensaje, mensaje_largo, fecha_inicio, fecha_fin)
             )
             flash("Promoción guardada correctamente ✅")
         else:
@@ -399,7 +417,7 @@ def tarjetas():
     for fila in filas:
         item = dict(fila)
         if promo_actual and item.get("activo"):
-            item["wa_link"] = link_whatsapp_clienta(item["celular"], promo_actual["mensaje"])
+            item["wa_link"] = link_whatsapp_clienta(item["celular"], mensaje_promo_para_whatsapp(promo_actual))
         else:
             item["wa_link"] = None
         todas_las_clientas.append(item)
@@ -469,7 +487,7 @@ def avisar_siguiente():
     session["avisadas"] = avisadas
     session.modified = True
 
-    link = link_whatsapp_clienta(siguiente["celular"], promo_actual["mensaje"])
+    link = link_whatsapp_clienta(siguiente["celular"], mensaje_promo_para_whatsapp(promo_actual))
     return redirect(link)
 
 

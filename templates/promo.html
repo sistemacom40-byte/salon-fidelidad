@@ -13,10 +13,11 @@
       padding: 24px 14px;
     }
     .box { background: white; padding: 28px; border-radius: 16px; width: 320px; max-width: 100%; margin-bottom: 16px; }
-    input, select {
+    input, select, textarea {
+      font-family: inherit;
       width: 100%; padding: 12px; font-size: 16px;
       border: 1px solid #ccc; border-radius: 8px; margin: 10px 0;
-      box-sizing: border-box;
+      box-sizing: border-box; resize: vertical;
     }
     label { font-size: 13px; color: #555; font-weight: 600; }
     button {
@@ -59,8 +60,11 @@
       <h2>📣 Promo del día</h2>
 
       <form method="POST" action="{{ url_for('promo') }}">
-        <label>Mensaje de la promoción</label>
+        <label>Mensaje de la promoción (aparece en la tarjeta)</label>
         <input type="text" name="mensaje" placeholder="Ej: Hoy 20% en manicure" value="{{ promo.mensaje if promo else '' }}">
+
+        <label>Mensaje extendido para WhatsApp (opcional)</label>
+        <textarea name="mensaje_largo" rows="4" placeholder="Escribe aquí un mensaje más completo. Si lo dejas vacío, se usará el mensaje corto de arriba.">{{ promo.mensaje_largo if promo and promo.mensaje_largo else '' }}</textarea>
 
         <label>Desde</label>
         <input type="date" name="fecha_inicio" value="{{ promo.fecha_inicio[:10] if promo and promo.fecha_inicio else '' }}">
