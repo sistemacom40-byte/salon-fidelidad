@@ -114,6 +114,22 @@
       <button type="submit">Guardar nuevo PIN</button>
     </form>
 
+    <hr style="margin:24px 0; border:none; border-top:1px solid #eee;">
+
+    <h1 style="font-size:16px;">🔒 PIN especial (protege editar/eliminar en caja)</h1>
+    <form method="POST" action="{{ url_for('panel_ajuste_pin_especial') }}">
+      <label>PIN especial actual</label>
+      <input type="password" name="pin_duena_actual" inputmode="numeric" maxlength="4" required>
+
+      <label>Nuevo PIN especial (4 dígitos)</label>
+      <input type="password" name="pin_duena_nuevo" inputmode="numeric" maxlength="4" required>
+
+      <label>Confirmar nuevo PIN especial</label>
+      <input type="password" name="pin_duena_nuevo_confirmar" inputmode="numeric" maxlength="4" required>
+
+      <button type="submit">Guardar PIN especial</button>
+    </form>
+
     <a class="volver" href="{{ url_for('panel') }}">← Volver al panel</a>
   </div>
 </body>

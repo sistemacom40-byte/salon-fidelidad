@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comisión - {{ encargada }}</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 20px; font-family: sans-serif; color: #222;
+      background: #fafafa;
+    }
+    .hoja {
+      background: white; max-width: 600px; margin: 0 auto; padding: 24px;
+      border: 1px solid #ddd;
+    }
+    h1 { font-size: 18px; margin: 0 0 2px; text-align: center; }
+    h2 { font-size: 13px; margin: 0 0 16px; text-align: center; color: #666; font-weight: 400; }
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 10px; }
+    th, td { border: 1px solid #999; padding: 6px 8px; }
+    th { background: #eee; text-align: left; font-size: 10.5px; text-transform: uppercase; }
+    td.num, th.num { text-align: right; }
+    td.centro, th.centro { text-align: center; }
+    .resumen { margin-top: 16px; }
+    .resumen-fila { display: flex; justify-content: space-between; padding: 6px 10px; background: #f4f1e6; border-radius: 6px; margin-bottom: 6px; font-size: 13px; }
+    .comision-total {
+      text-align: center; font-weight: 700; font-size: 18px; color: #2b5a27;
+      background: #eef6ec; border: 2px solid #2b5a27; border-radius: 6px; padding: 14px; margin-top: 10px;
+    }
+    .firma { margin-top: 50px; display: flex; justify-content: space-between; gap: 30px; }
+    .firma div { flex: 1; text-align: center; font-size: 11px; color: #555; }
+    .firma .linea { border-top: 1px solid #999; margin-bottom: 4px; padding-top: 30px; }
+    .btn-imprimir {
+      display: block; max-width: 600px; margin: 0 auto 14px; padding: 12px;
+      background: #4a6d3f; color: white; text-align: center; border: none;
+      border-radius: 8px; font-size: 15px; cursor: pointer; width: 100%;
+    }
+    @media print {
+      body { padding: 0; background: white; }
+      .hoja { border: none; max-width: 100%; }
+      .btn-imprimir { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir esta hoja</button>
+
+  <div class="hoja">
+    <h1>Comisión del salón</h1>
+    <h2>{{ encargada }} — {{ fecha_inicio_fmt }} al {{ fecha_fin_fmt }}</h2>
+
+    <table>
+      <tr>
+        <th>Servicio</th>
+        <th class="centro">Cantidad</th>
+        <th class="num">Monto</th>
+      </tr>
+      {% for d in detalle %}
+        <tr>
+          <td>{{ d.servicio }}</td>
+          <td class="centro">{{ d.cantidad }}</td>
+          <td class="num">Q{{ "%.2f"|format(d.monto) }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+
+    <div class="resumen">
+      <div class="resumen-fila"><span>Total de servicios cobrados</span><span>{{ cantidad_servicios }}</span></div>
+      <div class="resumen-fila"><span>Producción total</span><span>Q{{ "%.2f"|format(total_produccion) }}</span></div>
+      <div class="resumen-fila"><span>Porcentaje aplicado</span><span>{{ porcentaje }}%</span></div>
+    </div>
+
+    <div class="comision-total">Comisión a pagar: Q{{ "%.2f"|format(comision) }}</div>
+
+    <div class="firma">
+      <div><div class="linea"></div>Entregado por</div>
+      <div><div class="linea"></div>Recibido por {{ encargada }}</div>
+    </div>
+  </div>
+
+</body>
+</html>

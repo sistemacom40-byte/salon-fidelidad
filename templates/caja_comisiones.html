@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comisiones</title>
+  <style>
+    body {
+      margin: 0; min-height: 100vh;
+      background: linear-gradient(160deg, #e0d9c4, #b8c9a8);
+      font-family: sans-serif;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px 14px;
+    }
+    .columna { display: flex; flex-direction: column; gap: 16px; align-items: center; width: 100%; }
+    .box { background: white; padding: 26px; border-radius: 16px; width: 380px; max-width: 100%; box-sizing: border-box; }
+    input, select {
+      width: 100%; padding: 12px; font-size: 15px;
+      border: 1px solid #ccc; border-radius: 8px; margin: 8px 0;
+      box-sizing: border-box; font-family: inherit;
+    }
+    label { font-size: 11px; color: #666; font-weight: 700; text-transform: uppercase; }
+    button {
+      width: 100%; padding: 12px; background: #4a6d3f; color: white;
+      border: none; border-radius: 8px; font-size: 15px; margin-top: 8px;
+    }
+    .msg-error {
+      background: #fbe4e4; color: #a33; padding: 10px; border-radius: 8px;
+      text-align: center; font-size: 13px; font-weight: 600; margin-bottom: 12px;
+    }
+    .resultado-fila {
+      display: flex; justify-content: space-between; padding: 8px 10px;
+      background: #f4f1e6; border-radius: 8px; margin-top: 6px; font-size: 13.5px;
+    }
+    .resultado-comision {
+      text-align: center; font-weight: 700; font-size: 20px; color: #2b5a27;
+      background: #e4f2e0; padding: 16px; border-radius: 10px; margin-top: 10px;
+    }
+    a.volver { display: block; text-align: center; margin-top: 14px; font-size: 13px; color: #555; }
+  </style>
+</head>
+<body>
+  <div class="columna">
+
+    <div class="box">
+      <h2>📈 Calcular comisión</h2>
+
+      {% if error %}
+        <p class="msg-error">{{ error }}</p>
+      {% endif %}
+
+      <form method="POST" action="{{ url_for('caja_comisiones') }}">
+        <label>Encargada</label>
+        <select name="encargada_id" required>
+          <option value="">— Elegir —</option>
+          {% for e in encargadas %}
+            <option value="{{ e.id }}" {% if resultado and resultado.encargada == e.nombre %}selected{% endif %}>{{ e.nombre }}</option>
+          {% endfor %}
+        </select>
+
+        <label>Desde</label>
+        <input type="date" name="fecha_inicio" value="{{ resultado.fecha_inicio if resultado else '' }}" required>
+
+        <label>Hasta</label>
+        <input type="date" name="fecha_fin" value="{{ resultado.fecha_fin if resultado else '' }}" required>
+
+        <label>Porcentaje de comisión (%)</label>
+        <input type="number" name="porcentaje" step="0.01" min="0" max="100" placeholder="Ej: 30" value="{{ resultado.porcentaje if resultado else '' }}" required>
+
+        <label>PIN especial</label>
+        <input type="password" name="pin_duena" inputmode="numeric" maxlength="4" required>
+
+        <button type="submit">Calcular comisión</button>
+      </form>
+
+      <a class="volver" href="{{ url_for('panel') }}">← Volver al panel</a>
+    </div>
+
+    {% if resultado %}
+      <div class="box">
+        <h2>Resultado</h2>
+        <div class="resultado-fila"><span>Encargada</span><span>{{ resultado.encargada }}</span></div>
+        <div class="resultado-fila"><span>Rango</span><span>{{ resultado.fecha_inicio_fmt }} → {{ resultado.fecha_fin_fmt }}</span></div>
+        <div class="resultado-fila"><span>Servicios cobrados</span><span>{{ resultado.cantidad_servicios }}</span></div>
+        <div class="resultado-fila"><span>Producción total</span><span>Q{{ "%.2f"|format(resultado.total_produccion) }}</span></div>
+        <div class="resultado-fila"><span>Porcentaje aplicado</span><span>{{ resultado.porcentaje }}%</span></div>
+        <div class="resultado-comision">Comisión a pagar: Q{{ "%.2f"|format(resultado.comision) }}</div>
+
+        {% if resultado.detalle %}
+          <h3 style="font-size:13px; margin-top:16px; margin-bottom:6px; color:#555;">Detalle por servicio</h3>
+          <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+            <tr><th style="text-align:left; border-bottom:1px solid #ccc; padding:4px 0;">Servicio</th><th style="text-align:center; border-bottom:1px solid #ccc;">Cant.</th><th style="text-align:right; border-bottom:1px solid #ccc;">Monto</th></tr>
+            {% for d in resultado.detalle %}
+              <tr>
+                <td style="padding:4px 0; border-bottom:1px solid #f0f0f0;">{{ d.servicio }}</td>
+                <td style="text-align:center; border-bottom:1px solid #f0f0f0;">{{ d.cantidad }}</td>
+                <td style="text-align:right; border-bottom:1px solid #f0f0f0;">Q{{ "%.2f"|format(d.monto) }}</td>
+              </tr>
+            {% endfor %}
+          </table>
+        {% endif %}
+
+        <a class="volver" href="{{ url_for('caja_comisiones_imprimir', encargada_id=request.form.get('encargada_id'), fecha_inicio=resultado.fecha_inicio, fecha_fin=resultado.fecha_fin, porcentaje=resultado.porcentaje) }}" target="_blank">🖨️ Imprimir esta comisión</a>
+
+        <h3 style="font-size:13px; margin-top:16px; margin-bottom:6px; color:#555;">Marcar comisión como pagada</h3>
+        <form method="POST" action="{{ url_for('caja_comisiones_marcar_pagada') }}">
+          <input type="hidden" name="encargada_id" value="{{ request.form.get('encargada_id') }}">
+          <input type="hidden" name="encargada_nombre" value="{{ resultado.encargada }}">
+          <input type="hidden" name="monto" value="{{ resultado.comision }}">
+          <input type="hidden" name="fecha_inicio_rango" value="{{ resultado.fecha_inicio }}">
+          <input type="hidden" name="fecha_fin_rango" value="{{ resultado.fecha_fin }}">
+          <input type="hidden" name="porcentaje_rango" value="{{ resultado.porcentaje }}">
+
+          <label>Sueldo base (opcional, diferente para cada encargada)</label>
+          <input type="number" name="sueldo_base" step="0.01" min="0" placeholder="Ej: 500" value="0">
+
+          <label>Pagado con</label>
+          <select name="forma_pago_comision" required>
+            <option value="efectivo">Efectivo</option>
+            <option value="transferencia">Transferencia (banco)</option>
+          </select>
+
+          <label style="display:flex; align-items:center; gap:8px; font-weight:400; text-transform:none; margin-top:10px;">
+            <input type="checkbox" name="de_caja_salon" value="si" checked style="width:auto; margin:0;">
+            Este efectivo salió de la caja del salón (desmarca si lo pagaste aparte)
+          </label>
+
+          <label>PIN especial</label>
+          <input type="password" name="pin_duena" inputmode="numeric" maxlength="4" required>
+
+          <button type="submit">✅ Marcar como pagada</button>
+        </form>
+      </div>
+    {% endif %}
+
+  </div>
+</body>
+</html>

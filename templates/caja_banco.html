@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Banco</title>
+  <style>
+    body {
+      margin: 0; min-height: 100vh;
+      background: linear-gradient(160deg, #e0d9c4, #b8c9a8);
+      font-family: sans-serif;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px 14px;
+    }
+    .columna { display: flex; flex-direction: column; gap: 16px; align-items: center; width: 100%; }
+    .box { background: white; padding: 24px; border-radius: 16px; width: 100%; max-width: 460px; box-sizing: border-box; }
+    input, select {
+      width: 100%; padding: 11px; font-size: 15px;
+      border: 1px solid #ccc; border-radius: 8px; margin: 6px 0;
+      box-sizing: border-box; font-family: inherit;
+    }
+    label { font-size: 11px; color: #666; font-weight: 700; text-transform: uppercase; }
+    button {
+      width: 100%; padding: 11px; background: #4a6d3f; color: white;
+      border: none; border-radius: 8px; font-size: 14px; margin-top: 6px;
+    }
+    .btn-secundario { background: white; color: #b23; border: 1px solid #e5b8b8; }
+    .mensaje-ok {
+      background: #d4edda; color: #1e5c2f; padding: 10px; border-radius: 8px;
+      text-align: center; font-size: 13px; font-weight: 600;
+      width: 100%; max-width: 460px; box-sizing: border-box;
+    }
+    .fila-total {
+      display: flex; justify-content: space-between; font-size: 14px;
+      padding: 8px 10px; border-radius: 8px; background: #f4f1e6; margin-bottom: 6px;
+    }
+    .fila-total.gasto { background: #fbe4e4; color: #a33; }
+    .fila-total.saldo {
+      background: #e4f2e0; font-weight: 700; font-size: 16px; color: #2b5a27;
+      border: 2px solid #2b5a27;
+    }
+    .nav-mes {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      margin-bottom: 8px;
+    }
+    .nav-mes a { text-decoration: none; color: #4a6d3f; font-weight: 700; font-size: 20px; padding: 4px 10px; }
+    .titulo-mes { text-align: center; font-weight: 700; font-size: 14px; color: #2b5a27; flex: 1; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+    th { text-align: left; color: #888; font-size: 10px; text-transform: uppercase; padding: 6px 4px; border-bottom: 2px solid #eee; }
+    td { padding: 7px 4px; border-bottom: 1px solid #f0f0f0; }
+    .btn-mini { width: auto; padding: 5px 8px; font-size: 10.5px; margin: 0; background: white; color: #b23; border: 1px solid #e5b8b8; }
+    .badge { font-size: 9.5px; padding: 2px 7px; border-radius: 99px; font-weight: 700; white-space: nowrap; }
+    .badge-ok { background: #e4f2e0; color: #2b5a27; }
+    .badge-pendiente { background: #fbe9d0; color: #8a5a1e; }
+    .badge-aparte { background: #e0ecf5; color: #2a5a8a; }
+    a.volver { display: block; text-align: center; margin-top: 12px; font-size: 13px; color: #555; }
+    .cerrar-form { margin-top: 6px; }
+  </style>
+</head>
+<body>
+  <div class="columna">
+
+    {% with mensajes = get_flashed_messages() %}
+      {% if mensajes %}
+        {% for m in mensajes %}
+          <p class="mensaje-ok">{{ m }}</p>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="box">
+      <h2>🏦 Saldo esperado en banco</h2>
+      <div class="fila-total"><span>Transferencias cobradas</span><span>Q{{ "%.2f"|format(total_transferencias) }}</span></div>
+      <div class="fila-total"><span>Depósitos registrados</span><span>Q{{ "%.2f"|format(total_depositos) }}</span></div>
+      <div class="fila-total gasto"><span>Gastos pagados desde banco</span><span>-Q{{ "%.2f"|format(total_gastos_banco) }}</span></div>
+      <div class="fila-total gasto"><span>Comisiones pagadas desde banco</span><span>-Q{{ "%.2f"|format(total_comisiones_banco) }}</span></div>
+      <div class="fila-total saldo"><span>Saldo esperado</span><span>Q{{ "%.2f"|format(saldo_esperado) }}</span></div>
+      <p style="font-size:11px; color:#888; margin-top:10px;">Este saldo es histórico (acumulado desde siempre), no cambia según el mes que veas abajo.</p>
+
+      <form method="POST" action="{{ url_for('caja_banco_cerrar') }}" class="cerrar-form">
+        <button type="submit" class="btn-secundario">🔒 Cerrar Banco</button>
+      </form>
+      <a class="volver" href="{{ url_for('panel') }}">← Volver al panel</a>
+    </div>
+
+    <div class="box">
+      <div class="nav-mes">
+        <a href="{{ url_for('caja_banco', mes=mes_anterior_param) }}">‹</a>
+        <span class="titulo-mes">Viendo movimientos de: {{ nombre_mes_banco }}</span>
+        <a href="{{ url_for('caja_banco', mes=mes_siguiente_param) }}">›</a>
+      </div>
+      <input type="month" value="{{ mes_param }}" onchange="window.location.href='{{ url_for('caja_banco') }}?mes=' + this.value">
+    </div>
+
+    <div class="box">
+      <h2>➕ Registrar depósito</h2>
+      <form method="POST" action="{{ url_for('caja_banco_agregar_deposito') }}">
+        <label>¿A qué día del cuaderno corresponde este efectivo?</label>
+        <input type="date" name="fecha_cuaderno" required>
+        <label>Monto depositado</label>
+        <input type="number" name="monto_deposito" step="0.01" min="0" placeholder="Monto" required>
+        <label>Número de depósito (boleta)</label>
+        <input type="text" name="numero_deposito" placeholder="Ej: 954463373">
+        <label>Observación (opcional)</label>
+        <input type="text" name="observacion_deposito" placeholder="Ej: Depósito de la semana">
+        <button type="submit">➕ Registrar depósito</button>
+      </form>
+    </div>
+
+    <div class="box">
+      <h2>📋 Efectivo por depositar ({{ nombre_mes_banco }})</h2>
+      {% if efectivo_por_depositar %}
+        <table>
+          <tr><th>Día</th><th>Cobrado</th><th>Estado</th></tr>
+          {% for d in efectivo_por_depositar %}
+            <tr>
+              <td>{{ d.fecha_fmt }}</td>
+              <td>Q{{ "%.2f"|format(d.cobrado) }}</td>
+              <td>
+                {% if d.estado == 'Depositado' %}
+                  <span class="badge badge-ok">Depositado</span>
+                {% else %}
+                  <span class="badge badge-pendiente">Pendiente Q{{ "%.2f"|format(d.pendiente) }}</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </table>
+      {% else %}
+        <p style="text-align:center; color:#888; font-size:13px;">No hay efectivo cobrado registrado este mes.</p>
+      {% endif %}
+    </div>
+
+    <div class="box">
+      <h2>📋 Depósitos registrados ({{ depositos|length }})</h2>
+      {% if depositos %}
+        <table>
+          <tr><th>Monto</th><th>Corresponde al</th><th>Depositado el</th><th>No. depósito</th><th></th></tr>
+          {% for d in depositos %}
+            <tr>
+              <td>Q{{ "%.2f"|format(d.monto) }}</td>
+              <td>{{ formatear_fecha_dmy(d.fecha) }}</td>
+              <td>{{ formatear_fecha_dmy(d.fecha_registro) if d.fecha_registro else "—" }}</td>
+              <td>{{ d.numero_deposito or "—" }}</td>
+              <td>
+                <form method="POST" action="{{ url_for('caja_banco_eliminar_deposito', deposito_id=d.id) }}" onsubmit="return confirm('¿Eliminar este depósito?');">
+                  <button type="submit" class="btn-mini">✕</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </table>
+      {% else %}
+        <p style="text-align:center; color:#888; font-size:13px;">No hay depósitos registrados este mes.</p>
+      {% endif %}
+    </div>
+
+    <div class="box">
+      <h2>📤 Gastos pagados desde banco ({{ gastos_banco|length }})</h2>
+      {% if gastos_banco %}
+        <table>
+          <tr><th>Concepto</th><th>Monto</th><th>Fecha</th></tr>
+          {% for g in gastos_banco %}
+            <tr>
+              <td>{{ g.concepto }}</td>
+              <td>Q{{ "%.2f"|format(g.monto) }}</td>
+              <td>{{ formatear_fecha_dmy(g.fecha) }}</td>
+            </tr>
+          {% endfor %}
+        </table>
+      {% else %}
+        <p style="text-align:center; color:#888; font-size:13px;">No hay gastos pagados desde banco este mes.</p>
+      {% endif %}
+    </div>
+
+    <div class="box">
+      <h2>💼 Comisiones pagadas desde banco ({{ comisiones_banco|length }})</h2>
+      {% if comisiones_banco %}
+        <table>
+          <tr><th>Encargada</th><th>Monto</th><th>Fecha de pago</th></tr>
+          {% for c in comisiones_banco %}
+            <tr>
+              <td>{{ c.encargada_nombre }}</td>
+              <td>Q{{ "%.2f"|format(c.monto) }}</td>
+              <td>{{ formatear_fecha_dmy(c.fecha_pago) }}</td>
+            </tr>
+          {% endfor %}
+        </table>
+      {% else %}
+        <p style="text-align:center; color:#888; font-size:13px;">No hay comisiones pagadas desde banco este mes.</p>
+      {% endif %}
+    </div>
+
+    <div class="box">
+      <h2>💵 Comisiones pagadas en efectivo ({{ comisiones_efectivo|length }})</h2>
+      {% if comisiones_efectivo %}
+        <table>
+          <tr><th>Encargada</th><th>Monto</th><th>Fecha</th><th>Origen</th></tr>
+          {% for c in comisiones_efectivo %}
+            <tr>
+              <td>{{ c.encargada_nombre }}</td>
+              <td>Q{{ "%.2f"|format(c.monto) }}</td>
+              <td>{{ formatear_fecha_dmy(c.fecha_pago) }}</td>
+              <td>
+                {% if c.de_caja_salon %}
+                  <span class="badge badge-ok">De la caja</span>
+                {% else %}
+                  <span class="badge badge-aparte">Aparte</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </table>
+      {% else %}
+        <p style="text-align:center; color:#888; font-size:13px;">No hay comisiones pagadas en efectivo este mes.</p>
+      {% endif %}
+    </div>
+
+  </div>
+</body>
+</html>

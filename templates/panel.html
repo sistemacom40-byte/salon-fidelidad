@@ -13,6 +13,7 @@
       padding: 24px 14px;
     }
     .box { background: white; padding: 28px; border-radius: 16px; width: 320px; max-width: 100%; }
+    .columna { display: flex; flex-direction: column; gap: 16px; align-items: center; width: 100%; }
     input {
       width: 100%; padding: 12px; font-size: 16px;
       border: 1px solid #ccc; border-radius: 8px; margin: 10px 0;
@@ -40,6 +41,7 @@
   </style>
 </head>
 <body>
+  <div class="columna">
   <div class="box">
     <h2><span id="hojaSecreta" class="hoja-secreta">🍃</span> Buscar clienta</h2>
     <form method="POST">
@@ -52,6 +54,17 @@
     <a href="{{ url_for('promo') }}" class="logout" style="color:#3f7a3a;">📣 Editar promoción del día</a>
     <a href="{{ url_for('tarjetas') }}" class="logout" style="color:#3f7a3a;">🗂️ Gestionar tarjetas</a>
     <a href="{{ url_for('logout') }}" class="logout">Cerrar sesión del salón</a>
+  </div>
+
+  <div class="box" style="background:#faf7ee;">
+    <h2 style="font-size:16px;">💰 Caja del salón</h2>
+    <a href="{{ url_for('caja_cuaderno') }}" class="logout" style="color:#4a6d3f;">📒 Cuaderno del día</a>
+    <a href="{{ url_for('caja_servicios') }}" class="logout" style="color:#4a6d3f;">💈 Servicios y precios</a>
+    <a href="{{ url_for('caja_encargadas') }}" class="logout" style="color:#4a6d3f;">👤 Encargadas</a>
+    <a href="{{ url_for('caja_comisiones') }}" class="logout" style="color:#4a6d3f;">📈 Comisiones</a>
+    <a href="{{ url_for('caja_banco') }}" class="logout" style="color:#4a6d3f;">🏦 Banco</a>
+    <a href="{{ url_for('caja_reporte_mes') }}" class="logout" style="color:#4a6d3f;">📊 Reporte del mes</a>
+  </div>
   </div>
 
   <script>

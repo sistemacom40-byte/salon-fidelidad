@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reporte del día - {{ fecha_vista }}</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 20px; font-family: sans-serif; color: #222;
+      background: #fafafa;
+    }
+    .hoja {
+      background: white; max-width: 720px; margin: 0 auto; padding: 24px;
+      border: 1px solid #ddd;
+    }
+    h1 { font-size: 18px; margin: 0 0 2px; text-align: center; }
+    h2 { font-size: 13px; margin: 0 0 16px; text-align: center; color: #666; font-weight: 400; }
+    h3 { font-size: 13px; text-transform: uppercase; color: #444; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin: 18px 0 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { border: 1px solid #999; padding: 5px 6px; text-align: left; }
+    th { background: #eee; font-size: 10px; text-transform: uppercase; }
+    .col-num { width: 26px; text-align: center; }
+    .num { text-align: right; }
+    .caja-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .caja-col { border: 1px solid #999; border-radius: 4px; padding: 8px; font-size: 12.5px; }
+    .caja-col h4 { margin: 0 0 4px; font-size: 11px; text-transform: uppercase; color: #555; }
+    .caja-fila { display: flex; justify-content: space-between; padding: 2px 0; }
+    .caja-total {
+      grid-column: span 2; border: 2px solid #2b5a27; border-radius: 4px;
+      padding: 10px; text-align: center; font-weight: 700; font-size: 14px;
+      color: #2b5a27; background: #eef6ec; margin-top: 4px;
+    }
+    .firma { margin-top: 50px; display: flex; justify-content: space-between; gap: 30px; }
+    .firma div { flex: 1; text-align: center; font-size: 11px; color: #555; }
+    .firma .linea { border-top: 1px solid #999; margin-bottom: 4px; padding-top: 30px; }
+    .btn-imprimir {
+      display: block; max-width: 720px; margin: 0 auto 14px; padding: 12px;
+      background: #4a6d3f; color: white; text-align: center; border: none;
+      border-radius: 8px; font-size: 15px; cursor: pointer; width: 100%;
+    }
+    @media print {
+      body { padding: 0; background: white; }
+      .hoja { border: none; max-width: 100%; }
+      .btn-imprimir { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir esta hoja</button>
+
+  <div class="hoja">
+    <h1>Reporte diario del salón</h1>
+    <h2>{{ fecha_titulo }}</h2>
+
+    <h3>Servicios ({{ filas|length }})</h3>
+    {% if filas %}
+      <table>
+        <tr>
+          <th class="col-num">No.</th>
+          <th>Servicio</th>
+          <th class="num">Precio</th>
+          <th>Encargada</th>
+          <th>Estado</th>
+        </tr>
+        {% for f in filas %}
+          <tr>
+            <td class="col-num">{{ loop.index }}</td>
+            <td>{{ f.servicio }}{% if f.observacion %} — {{ f.observacion }}{% endif %}</td>
+            <td class="num">
+              Q{{ "%.2f"|format(f.precio) }}
+              {% if f.descuento and f.descuento > 0 %}<br><span style="font-size:10px;">-Q{{ "%.2f"|format(f.descuento) }} desc.</span>{% endif %}
+            </td>
+            <td>{{ f.encargada or "—" }}</td>
+            <td>
+              {% if f.estado_pago == 'pagado' %}Pagado ({{ f.forma_pago }}, {{ f.hora_pago }}){% else %}Pendiente{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </table>
+    {% else %}
+      <p style="font-size:12px; color:#888;">No hay servicios registrados este día.</p>
+    {% endif %}
+
+    <h3>Gastos ({{ gastos|length }})</h3>
+    {% if gastos %}
+      <table>
+        <tr><th class="col-num">No.</th><th>Concepto</th><th class="num">Monto</th><th>Hora</th></tr>
+        {% for g in gastos %}
+          <tr>
+            <td class="col-num">{{ loop.index }}</td>
+            <td>{{ g.concepto }}</td>
+            <td class="num">Q{{ "%.2f"|format(g.monto) }}</td>
+            <td>{{ g.hora }}</td>
+          </tr>
+        {% endfor %}
+      </table>
+    {% else %}
+      <p style="font-size:12px; color:#888;">No hay gastos registrados este día.</p>
+    {% endif %}
+
+    <h3>Caja del día</h3>
+    <div class="caja-fila" style="background:#f4f1e6; padding:8px 10px; border-radius:4px; margin-bottom:8px;">
+      <span>🧾 Servicios realizados</span><span>{{ total_servicios_cantidad }} — Q{{ "%.2f"|format(total_servicios_bruto) }}</span>
+    </div>
+    {% if total_descuentos_dia > 0 %}
+      <div class="caja-fila" style="background:#f4f1e6; padding:8px 10px; border-radius:4px; margin-bottom:8px;">
+        <span>🏷️ Descuentos otorgados</span><span>Q{{ "%.2f"|format(total_descuentos_dia) }}</span>
+      </div>
+    {% endif %}
+    <div class="caja-grid">
+      <div class="caja-col">
+        <h4>Entradas</h4>
+        {% if caja_inicial is not none %}
+          <div class="caja-fila"><span>Caja inicial</span><span>Q{{ "%.2f"|format(caja_inicial) }}</span></div>
+        {% endif %}
+        <div class="caja-fila"><span>Efectivo</span><span>Q{{ "%.2f"|format(total_efectivo) }}</span></div>
+        <div class="caja-fila"><span>Transferencia</span><span>Q{{ "%.2f"|format(total_transferencia) }}</span></div>
+        <div class="caja-fila"><span>Tarjeta</span><span>Q{{ "%.2f"|format(total_tarjeta) }}</span></div>
+        <div class="caja-fila"><span>Pendiente</span><span>Q{{ "%.2f"|format(total_pendiente_dia) }}</span></div>
+      </div>
+      <div class="caja-col">
+        <h4>Salidas</h4>
+        <div class="caja-fila"><span>Gastos (efectivo)</span><span>Q{{ "%.2f"|format(total_gastos_efectivo) }}</span></div>
+        <div class="caja-fila"><span>Gastos (banco)</span><span>Q{{ "%.2f"|format(total_gastos_transferencia) }}</span></div>
+      </div>
+      <div class="caja-total">Neto del día: Q{{ "%.2f"|format(total_neto) }}</div>
+      <div class="caja-total" style="border-color:#8a6a1e; background:#f7f0dc; color:#5a4310;">Efectivo esperado en caja: Q{{ "%.2f"|format(efectivo_esperado) }}</div>
+    </div>
+
+    <h3>Depósito bancario (evidencia)</h3>
+    {% if depositos %}
+      <table>
+        <tr><th class="col-num">No.</th><th class="num">Monto</th><th>No. de depósito</th><th>Depositado el</th><th>Observación</th></tr>
+        {% for d in depositos %}
+          <tr>
+            <td class="col-num">{{ loop.index }}</td>
+            <td class="num">Q{{ "%.2f"|format(d.monto) }}</td>
+            <td>{{ d.numero_deposito or "—" }}</td>
+            <td>{{ formatear_fecha_dmy(d.fecha_registro) if d.fecha_registro else formatear_fecha_dmy(d.fecha) }}</td>
+            <td>{{ d.observacion or "—" }}</td>
+          </tr>
+        {% endfor %}
+      </table>
+    {% else %}
+      <p style="font-size:12px; color:#888;">No se registró ningún depósito este día. (Engrapa aquí la boleta física si aplica.)</p>
+    {% endif %}
+
+    <div class="firma">
+      <div><div class="linea"></div>Encargada de caja</div>
+      <div><div class="linea"></div>Recibido por dueña</div>
+    </div>
+  </div>
+
+</body>
+</html>

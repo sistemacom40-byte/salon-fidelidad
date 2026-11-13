@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reporte del mes</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 20px; font-family: sans-serif; color: #222;
+      background: #fafafa;
+    }
+    .hoja {
+      background: white; max-width: 780px; margin: 0 auto; padding: 24px;
+      border: 1px solid #ddd;
+    }
+    h1 { font-size: 19px; margin: 0 0 2px; text-align: center; }
+    h2 { font-size: 13px; margin: 0 0 16px; text-align: center; color: #666; font-weight: 400; }
+    h3 { font-size: 13px; text-transform: uppercase; color: #444; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin: 18px 0 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { border: 1px solid #999; padding: 6px 7px; text-align: left; }
+    th { background: #eee; font-size: 10px; text-transform: uppercase; }
+    .num { text-align: right; }
+    .centro { text-align: center; }
+    .sube { color: #2b5a27; font-weight: 700; }
+    .baja { color: #a33; font-weight: 700; }
+    .neutro { color: #888; }
+    .observaciones { background: #f4f1e6; border-radius: 8px; padding: 14px; margin-top: 10px; font-size: 13px; }
+    .observaciones p { margin: 6px 0; }
+    .selector-mes {
+      display: block; max-width: 780px; margin: 0 auto 14px;
+    }
+    .selector-mes form { display: flex; gap: 8px; }
+    .selector-mes input { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 15px; }
+    .selector-mes button { padding: 10px 16px; border: none; border-radius: 8px; background: #4a6d3f; color: white; font-size: 14px; }
+    .btn-imprimir {
+      display: block; max-width: 780px; margin: 0 auto 14px; padding: 12px;
+      background: #4a6d3f; color: white; text-align: center; border: none;
+      border-radius: 8px; font-size: 15px; cursor: pointer; width: 100%;
+    }
+    @media print {
+      body { padding: 0; background: white; }
+      .hoja { border: none; max-width: 100%; }
+      .btn-imprimir, .selector-mes, .volver-panel { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="selector-mes">
+    <form method="GET" action="{{ url_for('caja_reporte_mes') }}">
+      <input type="month" name="mes" value="{{ mes_param }}">
+      <button type="submit">Ver mes</button>
+    </form>
+  </div>
+
+  <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir esta hoja</button>
+
+  <div class="hoja">
+    <h1>Reporte mensual del salón</h1>
+    <h2>{{ nombre_mes }} (comparado con {{ nombre_mes_anterior }})</h2>
+
+    <h3>Resumen financiero</h3>
+    <table>
+      <tr>
+        <th></th>
+        <th class="num">{{ nombre_mes }}</th>
+        <th class="num">{{ nombre_mes_anterior }}</th>
+        <th class="centro">Cambio</th>
+      </tr>
+      <tr>
+        <td>Efectivo cobrado</td>
+        <td class="num">Q{{ "%.2f"|format(actual.efectivo) }}</td>
+        <td class="num">Q{{ "%.2f"|format(anterior.efectivo) }}</td>
+        <td class="centro">—</td>
+      </tr>
+      <tr>
+        <td>Transferencia cobrada</td>
+        <td class="num">Q{{ "%.2f"|format(actual.transferencia) }}</td>
+        <td class="num">Q{{ "%.2f"|format(anterior.transferencia) }}</td>
+        <td class="centro">—</td>
+      </tr>
+      <tr>
+        <td>Tarjeta cobrada</td>
+        <td class="num">Q{{ "%.2f"|format(actual.tarjeta) }}</td>
+        <td class="num">Q{{ "%.2f"|format(anterior.tarjeta) }}</td>
+        <td class="centro">—</td>
+      </tr>
+      <tr>
+        <td><b>Ingresos totales</b></td>
+        <td class="num"><b>Q{{ "%.2f"|format(actual.ingresos) }}</b></td>
+        <td class="num"><b>Q{{ "%.2f"|format(anterior.ingresos) }}</b></td>
+        <td class="centro">
+          {% if cambios.ingresos is not none %}
+            <span class="{{ 'sube' if cambios.ingresos > 0 else 'baja' if cambios.ingresos < 0 else 'neutro' }}">{{ "%+.1f"|format(cambios.ingresos) }}%</span>
+          {% else %}—{% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td>Gastos totales</td>
+        <td class="num">Q{{ "%.2f"|format(actual.gastos) }}</td>
+        <td class="num">Q{{ "%.2f"|format(anterior.gastos) }}</td>
+        <td class="centro">
+          {% if cambios.gastos is not none %}
+            <span class="{{ 'baja' if cambios.gastos > 0 else 'sube' if cambios.gastos < 0 else 'neutro' }}">{{ "%+.1f"|format(cambios.gastos) }}%</span>
+          {% else %}—{% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td>Gastos en efectivo</td>
+        <td class="num">Q{{ "%.2f"|format(actual.gastos_efectivo) }}</td>
+        <td class="num">Q{{ "%.2f"|format(anterior.gastos_efectivo) }}</td>
+        <td class="centro">—</td>
+      </tr>
+      <tr>
+        <td>Gastos desde banco</td>
+        <td class="num">Q{{ "%.2f"|format(actual.gastos_transferencia) }}</td>
+        <td class="num">Q{{ "%.2f"|format(anterior.gastos_transferencia) }}</td>
+        <td class="centro">—</td>
+      </tr>
+      <tr>
+        <td><b>Ganancia neta (caja)</b></td>
+        <td class="num"><b>Q{{ "%.2f"|format(actual.neto) }}</b></td>
+        <td class="num"><b>Q{{ "%.2f"|format(anterior.neto) }}</b></td>
+        <td class="centro">
+          {% if cambios.neto is not none %}
+            <span class="{{ 'sube' if cambios.neto > 0 else 'baja' if cambios.neto < 0 else 'neutro' }}">{{ "%+.1f"|format(cambios.neto) }}%</span>
+          {% else %}—{% endif %}
+        </td>
+      </tr>
+    </table>
+    <p style="font-size:10.5px; color:#888; margin-top:4px;">La ganancia neta considera solo los gastos pagados en efectivo (impacto real en caja). Los gastos pagados desde banco se descuentan del saldo de banco, no de esta cifra.</p>
+
+    <h3>Volumen de servicios y descuentos</h3>
+    <table>
+      <tr>
+        <th></th>
+        <th class="num">{{ nombre_mes }}</th>
+        <th class="num">{{ nombre_mes_anterior }}</th>
+        <th class="centro">Cambio</th>
+      </tr>
+      <tr>
+        <td>Servicios realizados</td>
+        <td class="num">{{ actual.cantidad_servicios }}</td>
+        <td class="num">{{ anterior.cantidad_servicios }}</td>
+        <td class="centro">
+          {% if cambios.cantidad_servicios is not none %}
+            <span class="{{ 'sube' if cambios.cantidad_servicios > 0 else 'baja' if cambios.cantidad_servicios < 0 else 'neutro' }}">{{ "%+.1f"|format(cambios.cantidad_servicios) }}%</span>
+          {% else %}—{% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td>Monto facturado (bruto, antes de descuento)</td>
+        <td class="num">Q{{ "%.2f"|format(actual.monto_bruto_servicios) }}</td>
+        <td class="num">Q{{ "%.2f"|format(anterior.monto_bruto_servicios) }}</td>
+        <td class="centro">
+          {% if cambios.monto_bruto_servicios is not none %}
+            <span class="{{ 'sube' if cambios.monto_bruto_servicios > 0 else 'baja' if cambios.monto_bruto_servicios < 0 else 'neutro' }}">{{ "%+.1f"|format(cambios.monto_bruto_servicios) }}%</span>
+          {% else %}—{% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td>Descuentos otorgados</td>
+        <td class="num">Q{{ "%.2f"|format(actual.monto_descuentos) }}</td>
+        <td class="num">Q{{ "%.2f"|format(anterior.monto_descuentos) }}</td>
+        <td class="centro">
+          {% if cambios.monto_descuentos is not none %}
+            <span class="{{ 'baja' if cambios.monto_descuentos > 0 else 'sube' if cambios.monto_descuentos < 0 else 'neutro' }}">{{ "%+.1f"|format(cambios.monto_descuentos) }}%</span>
+          {% else %}—{% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td>Pendiente de cobro al cierre</td>
+        <td class="num">Q{{ "%.2f"|format(actual.pendiente_cierre) }}</td>
+        <td class="num">Q{{ "%.2f"|format(anterior.pendiente_cierre) }}</td>
+        <td class="centro">—</td>
+      </tr>
+    </table>
+
+    <h3>Comisiones y banco</h3>
+    <table>
+      <tr><th></th><th class="num">{{ nombre_mes }}</th></tr>
+      <tr><td>Comisiones pagadas (efectivo + banco)</td><td class="num">Q{{ "%.2f"|format(actual.comisiones_pagadas) }}</td></tr>
+      <tr><td>Depositado al banco este mes</td><td class="num">Q{{ "%.2f"|format(actual.depositado_mes) }}</td></tr>
+    </table>
+
+    <h3>Desempeño de las encargadas</h3>
+    {% if desempeno %}
+      <table>
+        <tr>
+          <th>Encargada</th>
+          <th class="centro">Servicios {{ nombre_mes }}</th>
+          <th class="centro">Servicios {{ nombre_mes_anterior }}</th>
+          <th class="centro">Cambio</th>
+          <th class="num">Producción {{ nombre_mes }}</th>
+        </tr>
+        {% for d in desempeno %}
+          <tr>
+            <td>{{ d.nombre }}</td>
+            <td class="centro">{{ d.cantidad_actual }}</td>
+            <td class="centro">{{ d.cantidad_anterior }}</td>
+            <td class="centro">
+              {% if d.cambio_cantidad is not none %}
+                <span class="{{ 'sube' if d.cambio_cantidad > 0 else 'baja' if d.cambio_cantidad < 0 else 'neutro' }}">{{ "%+.1f"|format(d.cambio_cantidad) }}%</span>
+              {% else %}—{% endif %}
+            </td>
+            <td class="num">Q{{ "%.2f"|format(d.produccion_actual) }}</td>
+          </tr>
+        {% endfor %}
+      </table>
+    {% else %}
+      <p style="font-size:12px; color:#888;">No hay servicios registrados por encargadas este mes.</p>
+    {% endif %}
+
+    <h3>💡 Observaciones</h3>
+    <div class="observaciones">
+      {% for obs in observaciones %}
+        <p>{{ obs }}</p>
+      {% endfor %}
+    </div>
+
+    <a href="{{ url_for('panel') }}" class="volver-panel" style="display:block; text-align:center; margin-top:16px; font-size:13px; color:#555;">← Volver al panel</a>
+  </div>
+
+</body>
+</html>

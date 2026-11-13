@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Servicios y precios</title>
+  <style>
+    body {
+      margin: 0; min-height: 100vh;
+      background: linear-gradient(160deg, #e0d9c4, #b8c9a8);
+      font-family: sans-serif;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px 14px;
+    }
+    .columna { display: flex; flex-direction: column; gap: 16px; align-items: center; width: 100%; }
+    .box { background: white; padding: 28px; border-radius: 16px; width: 340px; max-width: 100%; }
+    input {
+      width: 100%; padding: 12px; font-size: 16px;
+      border: 1px solid #ccc; border-radius: 8px; margin: 10px 0;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%; padding: 12px; background: #4a6d3f; color: white;
+      border: none; border-radius: 8px; font-size: 16px;
+    }
+    .mensaje-ok {
+      background: #d4edda; color: #1e5c2f; padding: 10px; border-radius: 8px;
+      text-align: center; font-size: 13px; font-weight: 600; margin-bottom: 12px;
+    }
+    .fila-servicio {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0; border-bottom: 1px solid #eee; gap: 10px;
+    }
+    .fila-servicio:last-child { border-bottom: none; }
+    .fila-servicio.inactivo { opacity: 0.5; }
+    .precio { font-weight: 700; color: #4a6d3f; }
+    .fila-acciones { display: flex; gap: 6px; flex-shrink: 0; }
+    .btn-mini {
+      width: auto; padding: 7px 10px; font-size: 12px; margin: 0;
+      border-radius: 6px; border: none; cursor: pointer;
+    }
+    .btn-desactivar { background: white; color: #b26b00; border: 1px solid #f0d9a0; }
+    .btn-reactivar { background: #4a6d3f; color: white; }
+    .btn-eliminar { background: white; color: #b23; border: 1px solid #e5b8b8; }
+    a.volver { display: block; text-align: center; margin-top: 16px; font-size: 13px; color: #555; }
+  </style>
+</head>
+<body>
+  <div class="columna">
+
+    <div class="box">
+      <h2>💈 Servicios y precios</h2>
+
+      {% with mensajes = get_flashed_messages() %}
+        {% if mensajes %}
+          {% for m in mensajes %}
+            <p class="mensaje-ok">{{ m }}</p>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('caja_servicios') }}">
+        <input type="text" name="nombre" placeholder="Nombre del servicio (Ej: Corte)" required>
+        <input type="number" name="precio" placeholder="Precio (Ej: 30)" step="0.01" min="0" required>
+        <button type="submit">Agregar servicio</button>
+      </form>
+
+      <a class="volver" href="{{ url_for('panel') }}">← Volver al panel</a>
+    </div>
+
+    <div class="box">
+      <h2>📋 Lista de servicios ({{ servicios|length }})</h2>
+
+      {% if servicios %}
+        {% for s in servicios %}
+          <div class="fila-servicio {{ '' if s.activo else 'inactivo' }}">
+            <div>
+              <b>{{ s.nombre }}</b><br>
+              <span class="precio">Q{{ "%.2f"|format(s.precio) }}</span>
+            </div>
+            <div class="fila-acciones">
+              <form method="POST" action="{{ url_for('caja_servicios_toggle', servicio_id=s.id) }}">
+                {% if s.activo %}
+                  <button type="submit" class="btn-mini btn-desactivar">Desactivar</button>
+                {% else %}
+                  <button type="submit" class="btn-mini btn-reactivar">Reactivar</button>
+                {% endif %}
+              </form>
+              <form method="POST" action="{{ url_for('caja_servicios_eliminar', servicio_id=s.id) }}"
+                    onsubmit="return confirm('¿Eliminar el servicio {{ s.nombre }} permanentemente?');">
+                <button type="submit" class="btn-mini btn-eliminar">Eliminar</button>
+              </form>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p style="text-align:center; color:#888; font-size:13px;">Todavía no has agregado ningún servicio.</p>
+      {% endif %}
+    </div>
+
+  </div>
+</body>
+</html>

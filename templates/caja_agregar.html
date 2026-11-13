@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agregar servicio</title>
+  <style>
+    body {
+      margin: 0; min-height: 100vh;
+      background: linear-gradient(160deg, #e0d9c4, #b8c9a8);
+      font-family: sans-serif;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px 14px;
+    }
+    .columna { display: flex; flex-direction: column; gap: 16px; align-items: center; width: 100%; }
+    .box { background: white; padding: 28px; border-radius: 16px; width: 340px; max-width: 100%; }
+    input, select {
+      width: 100%; padding: 12px; font-size: 16px;
+      border: 1px solid #ccc; border-radius: 8px; margin: 8px 0;
+      box-sizing: border-box; font-family: inherit;
+    }
+    label { font-size: 12px; color: #666; font-weight: 700; text-transform: uppercase; }
+    button {
+      width: 100%; padding: 12px; background: #4a6d3f; color: white;
+      border: none; border-radius: 8px; font-size: 16px; margin-top: 8px;
+    }
+    .mensaje-ok {
+      background: #d4edda; color: #1e5c2f; padding: 10px; border-radius: 8px;
+      text-align: center; font-size: 13px; font-weight: 600; margin-bottom: 12px;
+    }
+    .separador { text-align: center; font-size: 11px; color: #999; margin: 14px 0 6px; text-transform: uppercase; }
+    a.volver { display: block; text-align: center; margin-top: 16px; font-size: 13px; color: #555; }
+  </style>
+</head>
+<body>
+  <div class="columna">
+    <div class="box">
+      <h2>➕ Agregar servicio</h2>
+
+      {% with mensajes = get_flashed_messages() %}
+        {% if mensajes %}
+          {% for m in mensajes %}
+            <p class="mensaje-ok">{{ m }}</p>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('caja_agregar') }}">
+        <label>Nombre de la clienta</label>
+        <input type="text" name="nombre_clienta" placeholder="Ej: María López" required>
+
+        <label>De la lista de precios</label>
+        <select name="servicio_id">
+          <option value="">— Elegir de la lista —</option>
+          {% for s in servicios_disponibles %}
+            <option value="{{ s.id }}">{{ s.nombre }} — Q{{ "%.2f"|format(s.precio) }}</option>
+          {% endfor %}
+        </select>
+
+        <label>O escribe uno libre (nombre + precio)</label>
+        <input type="text" name="nombre_libre" placeholder="Nombre del servicio">
+        <input type="number" name="precio_libre" placeholder="Precio" step="0.01" min="0">
+
+        <label>Encargada</label>
+        <input type="text" name="encargada" placeholder="Quién realizó el servicio">
+
+        <label>Observación (opcional)</label>
+        <input type="text" name="observacion" placeholder="Ej: pagó doble, transferencia pendiente...">
+
+        <button type="submit">➕ Agregar al cuaderno</button>
+      </form>
+
+      <a class="volver" href="{{ url_for('caja_cuaderno') }}">📒 Ver cuaderno del día</a>
+      <a class="volver" href="{{ url_for('panel') }}">← Volver al panel</a>
+    </div>
+  </div>
+</body>
+</html>
