@@ -2,35 +2,58 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Panel del Salón</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --papel: #F6F1E4;
+      --tinta: #2B2A24;
+      --hoja: #3F7A3A;
+      --hoja-oscura: #2B5A27;
+      --hoja-clara: #8FBF7F;
+      --oro: #C9A24B;
+      --oro-oscuro: #8A6A1E;
+      --oro-claro: #F0DE9E;
+      --gris: #7C7562;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
-      margin: 0; min-height: 100vh;
+      margin: 0;
+      min-height: 100vh;
       background: linear-gradient(160deg, #e7ddc2, #c9bd97);
-      font-family: sans-serif;
-      display: flex; align-items: center; justify-content: center;
-      padding: 24px 14px;
+      font-family: 'Inter', system-ui, sans-serif;
+      color: var(--tinta);
+      padding: max(22px, env(safe-area-inset-top)) 14px max(30px, env(safe-area-inset-bottom));
     }
-    .box { background: white; padding: 28px; border-radius: 16px; width: 320px; max-width: 100%; }
-    .columna { display: flex; flex-direction: column; gap: 16px; align-items: center; width: 100%; }
-    input {
-      width: 100%; padding: 12px; font-size: 16px;
-      border: 1px solid #ccc; border-radius: 8px; margin: 10px 0;
-      box-sizing: border-box;
+    .panel {
+      max-width: 440px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
-    button {
-      width: 100%; padding: 12px; background: #3f7a3a; color: white;
-      border: none; border-radius: 8px; font-size: 16px;
+    a { text-decoration: none; color: inherit; }
+    a:focus-visible, button:focus-visible {
+      outline: 3px solid rgba(201, 162, 75, 0.8);
+      outline-offset: 2px;
     }
-    .hint { font-size: 12px; color: #888; margin-top: -4px; margin-bottom: 10px; }
-    .logout {
-      display: block;
-      text-align: center;
-      margin-top: 16px;
-      font-size: 13px;
-      color: #b23;
-      text-decoration: none;
+
+    /* ---------- Buscar clienta ---------- */
+    .buscar {
+      background: #fff;
+      border-radius: 24px;
+      padding: 24px 22px 22px;
+      box-shadow: 0 26px 40px -24px rgba(50, 38, 10, 0.5), 0 3px 8px rgba(50, 38, 10, 0.08);
+    }
+    .buscar h1 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 600;
+      font-size: 27px;
+      line-height: 1.1;
+      color: var(--hoja-oscura);
+      margin: 0 0 18px;
     }
     .hoja-secreta {
       cursor: default;
@@ -38,34 +61,242 @@
       -webkit-user-select: none;
       -webkit-touch-callout: none;
     }
+    .buscar input {
+      display: block;
+      width: 100%;
+      padding: 15px 16px;
+      font: inherit;
+      font-size: 16px;
+      color: var(--tinta);
+      background: #fffdf7;
+      border: 1.5px solid #e3dcc4;
+      border-radius: 14px;
+      margin: 0 0 10px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .buscar input::placeholder { color: #a39b84; }
+    .buscar input:focus {
+      outline: none;
+      border-color: var(--hoja);
+      box-shadow: 0 0 0 4px rgba(63, 122, 58, 0.16);
+    }
+    .ayuda {
+      font-size: 12.5px;
+      color: var(--gris);
+      margin: 0 2px 16px;
+    }
+    .boton-principal {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      font: inherit;
+      font-size: 16.5px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--hoja), var(--hoja-oscura));
+      box-shadow: 0 4px 0 #1f4a1c, 0 16px 22px -12px rgba(43, 90, 39, 0.75);
+      transition: transform 0.08s, box-shadow 0.08s;
+    }
+    .boton-principal:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #1f4a1c, 0 8px 14px -10px rgba(43, 90, 39, 0.75);
+    }
+
+    /* ---------- Atajos de fidelidad ---------- */
+    .atajos {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .atajo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 86px;
+      padding: 12px 6px;
+      text-align: center;
+      font-size: 12.5px;
+      font-weight: 600;
+      line-height: 1.2;
+      color: var(--hoja-oscura);
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: 16px;
+      box-shadow: 0 3px 0 rgba(43, 90, 39, 0.16);
+      transition: transform 0.08s, box-shadow 0.08s;
+    }
+    .atajo span { font-size: 25px; line-height: 1; }
+    .atajo:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(43, 90, 39, 0.16); }
+
+    /* ---------- Caja del salón ---------- */
+    .caja {
+      background: linear-gradient(170deg, #fbf7e8, #f3ecd3);
+      border: 1px solid rgba(201, 162, 75, 0.45);
+      border-radius: 24px;
+      padding: 20px 16px 16px;
+      box-shadow: 0 22px 36px -26px rgba(50, 38, 10, 0.5);
+    }
+    .caja-cabecera {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0 4px 16px;
+    }
+    .caja-moneda {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      font-size: 22px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--oro-claro), var(--oro));
+      box-shadow: 0 3px 0 var(--oro-oscuro);
+    }
+    .caja-cabecera h2 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 600;
+      font-size: 20px;
+      line-height: 1.1;
+      margin: 0;
+      color: #4a3a12;
+    }
+    .caja-cabecera p { margin: 3px 0 0; font-size: 12.5px; color: var(--gris); }
+
+    /* Cuaderno del día: la pieza principal, con renglones como el cuaderno real */
+    .cuaderno {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+      padding: 18px 16px 18px 20px;
+      border: 1.5px solid var(--hoja);
+      border-radius: 16px;
+      background-color: #fffdf3;
+      background-image:
+        linear-gradient(90deg, transparent 58px, rgba(201, 80, 80, 0.28) 58px, rgba(201, 80, 80, 0.28) 59.5px, transparent 59.5px),
+        repeating-linear-gradient(to bottom, transparent 0, transparent 23px, rgba(63, 122, 58, 0.17) 23px, rgba(63, 122, 58, 0.17) 24px);
+      box-shadow: 0 4px 0 var(--hoja-oscura), 0 16px 22px -14px rgba(43, 90, 39, 0.6);
+      transition: transform 0.08s, box-shadow 0.08s;
+    }
+    .cuaderno:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--hoja-oscura); }
+    .cuaderno-icono { font-size: 32px; line-height: 1; flex-shrink: 0; width: 34px; text-align: center; }
+    .cuaderno-texto { display: flex; flex-direction: column; gap: 3px; }
+    .cuaderno-texto strong {
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 600;
+      font-size: 21px;
+      color: var(--hoja-oscura);
+    }
+    .cuaderno-texto small { font-size: 12.5px; color: var(--gris); }
+
+    .caja-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .mosaico {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-height: 58px;
+      padding: 12px 12px;
+      font-size: 13.5px;
+      font-weight: 600;
+      line-height: 1.2;
+      color: #4a3a12;
+      background: #fff;
+      border: 1px solid #e8dfc3;
+      border-radius: 14px;
+      box-shadow: 0 3px 0 #e3d9b8;
+      transition: transform 0.08s, box-shadow 0.08s;
+    }
+    .mosaico:active { transform: translateY(2px); box-shadow: 0 1px 0 #e3d9b8; }
+    .mosaico .icono { font-size: 21px; line-height: 1; flex-shrink: 0; }
+    .mosaico.ancho { grid-column: span 2; }
+    .pin {
+      margin-left: auto;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--oro-oscuro);
+      background: var(--oro-claro);
+      padding: 2px 7px;
+      border-radius: 99px;
+      flex-shrink: 0;
+    }
+
+    /* ---------- Salir ---------- */
+    .salir {
+      align-self: center;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #a33;
+      padding: 11px 22px;
+      background: rgba(255, 255, 255, 0.55);
+      border: 1.5px solid rgba(170, 51, 51, 0.32);
+      border-radius: 999px;
+    }
+    .salir:active { background: rgba(255, 255, 255, 0.9); }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
   </style>
 </head>
 <body>
-  <div class="columna">
-  <div class="box">
-    <h2><span id="hojaSecreta" class="hoja-secreta">🍃</span> Buscar clienta</h2>
-    <form method="POST">
-      <input type="tel" name="celular" placeholder="Número de celular" required>
-      <input type="text" name="nombre" placeholder="Nombre (solo si es nueva)">
-      <p class="hint">Si la clienta ya existe, este nombre se ignora.</p>
-      <button type="submit">Buscar / Registrar visita</button>
-    </form>
-    <a href="{{ url_for('resumen') }}" class="logout" style="color:#3f7a3a;">📊 Ver resumen del salón</a>
-    <a href="{{ url_for('promo') }}" class="logout" style="color:#3f7a3a;">📣 Editar promoción del día</a>
-    <a href="{{ url_for('tarjetas') }}" class="logout" style="color:#3f7a3a;">🗂️ Gestionar tarjetas</a>
-    <a href="{{ url_for('logout') }}" class="logout">Cerrar sesión del salón</a>
-  </div>
+  <main class="panel">
 
-  <div class="box" style="background:#faf7ee;">
-    <h2 style="font-size:16px;">💰 Caja del salón</h2>
-    <a href="{{ url_for('caja_cuaderno') }}" class="logout" style="color:#4a6d3f;">📒 Cuaderno del día</a>
-    <a href="{{ url_for('caja_servicios') }}" class="logout" style="color:#4a6d3f;">💈 Servicios y precios</a>
-    <a href="{{ url_for('caja_encargadas') }}" class="logout" style="color:#4a6d3f;">👤 Encargadas</a>
-    <a href="{{ url_for('caja_comisiones') }}" class="logout" style="color:#4a6d3f;">📈 Comisiones</a>
-    <a href="{{ url_for('caja_banco') }}" class="logout" style="color:#4a6d3f;">🏦 Banco</a>
-    <a href="{{ url_for('caja_reporte_mes') }}" class="logout" style="color:#4a6d3f;">📊 Reporte del mes</a>
-  </div>
-  </div>
+    <section class="buscar">
+      <h1><span id="hojaSecreta" class="hoja-secreta">🍃</span> Buscar clienta</h1>
+      <form method="POST">
+        <input type="tel" name="celular" placeholder="Número de celular" inputmode="tel" required>
+        <input type="text" name="nombre" placeholder="Nombre (solo si es nueva)">
+        <p class="ayuda">Si la clienta ya existe, este nombre se ignora.</p>
+        <button type="submit" class="boton-principal">Buscar / Registrar visita</button>
+      </form>
+    </section>
+
+    <nav class="atajos">
+      <a class="atajo" href="{{ url_for('resumen') }}"><span>📊</span>Resumen del salón</a>
+      <a class="atajo" href="{{ url_for('promo') }}"><span>📣</span>Promoción del día</a>
+      <a class="atajo" href="{{ url_for('tarjetas') }}"><span>🗂️</span>Gestionar tarjetas</a>
+    </nav>
+
+    <section class="caja">
+      <div class="caja-cabecera">
+        <div class="caja-moneda">💰</div>
+        <div>
+          <h2>Caja del salón</h2>
+          <p>Servicios, cobros y reportes</p>
+        </div>
+      </div>
+
+      <a class="cuaderno" href="{{ url_for('caja_cuaderno') }}">
+        <span class="cuaderno-icono">📒</span>
+        <span class="cuaderno-texto">
+          <strong>Cuaderno del día</strong>
+          <small>Agrega servicios y cobra</small>
+        </span>
+      </a>
+
+      <div class="caja-grid">
+        <a class="mosaico" href="{{ url_for('caja_servicios') }}"><span class="icono">💈</span>Servicios y precios</a>
+        <a class="mosaico" href="{{ url_for('caja_encargadas') }}"><span class="icono">👤</span>Encargadas</a>
+        <a class="mosaico" href="{{ url_for('caja_comisiones') }}"><span class="icono">📈</span>Comisiones<span class="pin">PIN</span></a>
+        <a class="mosaico" href="{{ url_for('caja_banco') }}"><span class="icono">🏦</span>Banco<span class="pin">PIN</span></a>
+        <a class="mosaico ancho" href="{{ url_for('caja_reporte_mes') }}"><span class="icono">📊</span>Reporte del mes</a>
+      </div>
+    </section>
+
+    <a class="salir" href="{{ url_for('logout') }}">Cerrar sesión del salón</a>
+
+  </main>
 
   <script>
     (function () {
